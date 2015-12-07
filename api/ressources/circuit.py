@@ -1,7 +1,7 @@
 from twisted.web import resource
 from api.util import response
 import stem
-from api.json import JsonCircuit
+from api.json import JsonCircuit, JsonCircuitDetails
 
 class TorResource(resource.Resource):
 
@@ -36,7 +36,7 @@ class CircuitList(TorResource):
 	def render_GET(self, request):
 		result = []
 		for c in self.controller.get_circuits():
-			result.append(JsonCircuit.from_stem(c))
+			result.append(JsonCircuit(stem=c).as_dict())
 		return result
 
 class Circuit(TorResource):
@@ -52,28 +52,8 @@ class Circuit(TorResource):
 		circuit = controller.get_circuit(id)
 		return cls(circuit, controller)
 
-	def as_dict(self):
-		attributes = (
-			'id',
-			'status',
-			'path',
-			'build_flags',
-			'purpose',
-			'hs_state',
-			'rend_query',
-			'created',
-			'reason',
-			'remote_reason',
-			'socks_username',
-			'socks_password',
-		)
-		result = response.object_to_dict(self.circuit, attributes)
-		result['path'] = path_to_dict(result['path'])
-		return result
-
-	@response.json
 	def render_GET(self, request):
-		return self.as_dict()
+		return JsonCircuitDetails(stem=self.circuit).json()
 	
 	@response.json
 	def render_DELETE(self, request):

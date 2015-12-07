@@ -3,14 +3,8 @@
 <div class="col-sm-10">
 <h1> Circuit {{circuit.id}}</h1>
 </div>
-<div class="col-sm-2" ng-switch="circuit.status">
-  <a class="btn btn-primary btn-lg disabled" ng-switch-when="LAUNCHED">LAUNCHED</a>
-  <a class="btn btn-success btn-lg disabled" ng-switch-when="BUILT">BUILT</a>
-  <a href="#" class="btn btn-primary btn-lg disabled" ng-switch-when="EXTENDED">EXTENDED</a>
-  <a href="#" class="btn btn-danger btn-lg disabled" ng-switch-when="FAILED">FAILED</a>
-  <a href="#" class="btn btn-secondary btn-lg disabled" ng-switch-when="CLOSED">CLOSED</a>
-  <a href="#" class="btn btn-secondary btn-lg disabled" ng-switch-default>Unknown</a>
-</div>
+<div>
+  <a class="btn {{circuit.status|statusButton}} btn-lg disabled">{{circuit.status}}</a>
 </div>
 <div class="row">
 <div class="col-md-2">Created on</div>

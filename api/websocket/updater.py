@@ -49,7 +49,7 @@ class MyServerProtocol(WebSocketServerProtocol):
         self.sendEvent(EVENT_TYPE_CIRCUIT, 
             {
                 'action': action,
-                'circuit': JsonCircuit.from_txtor(circuit)
+                'circuit': JsonCircuit(txtor=circuit).as_dict()
             });
 
     def circuit_new(self, circuit):
