@@ -1,0 +1,27 @@
+h1 Circuits
+// <div id="circuitsgraph" style="height: 400px; max-width:500px"></div>
+.table-responsive
+  table.table.table-striped
+    thead
+      th Id
+      th Status
+      th Path
+      th Actions
+    tbody(ng-repeat="circuit in circuits")
+      tr
+        td
+          a.btn.btn-primary(role="button", href="#/circuits/{{circuit.id}}") {{circuit.id}}
+        td
+          button.btndiv{{circuit.status}} (class="{{circuit status | statusButton}} ")
+        td
+          span(ng-repeat="path in circuit.path") {{path.name}} &#62; 
+          i Internet
+        td
+          a.btn.btn-danger(ng-if="circuit.status == 'BUILT'", ng-click="deleteCircuit(circuit.id)", role="button")
+            span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
+            | Delete
+//
+  {{drawGraph("circuitsgraph")}}
+  <div ng-repeat="circuit in circuits">
+  {{addToGraph(circuit)}}
+  </div>

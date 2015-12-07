@@ -55,3 +55,16 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Generated HTML
+*.html
+
+# bower & npm components
+app/components/
+node_modules/
+
+# Python virtual environment
+virt/
+
+# vim swap files
+*.swp

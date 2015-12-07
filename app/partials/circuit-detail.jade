@@ -1,0 +1,22 @@
+.row
+  .col-sm-10
+    h1  Circuit {{circuit.id}}
+  div
+    a.btn(class="{{circuit status|statusButton}}") {{circuit.status}}
+  .row
+    .col-md-2 Created on
+    .col-md-10 {{ circuit.created| date : "medium"}}
+  .row
+    .col-md-2 Build Flags
+    .col-md-10
+      span(ng-repeat="flag in circuit.build_flags") {{flag}} 
+  h2 Nodes
+  .table-responsive
+    table.table.table-striped
+      thead
+        th Name
+        th Fingerprint
+      tbody
+        tr(ng-repeat="path in circuit.path")
+          td {{path.name}}
+          td {{path.fingerprint}}
