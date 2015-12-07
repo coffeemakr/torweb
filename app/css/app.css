@@ -1,0 +1,7 @@
+/* app css stylesheet */
+
+.logcontainer{
+	/*display: block;*/
+	max-height: 300px;
+	overflow: scroll;
+}

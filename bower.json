@@ -1,0 +1,20 @@
+{
+  "name": "torweb",
+  "version": "0.0.0",
+  "license": "GPLv2",
+  "private": true,
+  "dependencies": {
+    "angular": "1.4.x",
+    "angular-mocks": "1.4.x",
+    "jquery": "~2.1.1",
+    "bootstrap": "~4",
+    "angular-route": "1.4.x",
+    "angular-resource": "1.4.x",
+    "angular-poller": "~0.4.1",
+    "ng-websocket": "~0.2",
+    "angular-websocket": "~1.0.14"
+  },
+  "resolutions": {
+    "angular": "1.4.x"
+  }
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="torstatApp">
+  <head>
+    <!-- Required meta tags always come first -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/simple-sidebar.css">
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/angular-resource/angular-resource.js"></script>
+    <script src="bower_components/angular-poller/angular-poller.js"></script>
+    <script src="bower_components/angular-websocket/angular-websocket.js"></script>
+    <script src="js/sigma.min.js"></script>
+    <script src="js/plugins/sigma.layout.forceAtlas2.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/controllers.js"></script>
+    <script src="js/services.js"></script>
+  </head>
+  <body>
+
+        <!-- Page Content -->
+            <div  class="container" ng-view>
+            </div>
+            <div class="container" ng-controller="UpdateCtrl">
+            <h2> Logs</h2>
+            <div class="responsive-table">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody class="logcontainer">
+                    <tr ng-repeat="log in Logs">
+                        <td>{{log.time | date:'medium'}}</td>
+                        <td>{{log.message}}</td>
+                    </tr>    
+                </tbody>
+            </table>
+            </div>
+                
+            </div>
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+    <!-- jQuery first, then Bootstrap JS. -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    
+  </body>
+</html>
