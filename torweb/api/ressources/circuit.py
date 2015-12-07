@@ -1,7 +1,7 @@
 from twisted.web import resource
-from api.util import response
+from torweb.api.util import response
 import stem
-from api.json import JsonCircuit, JsonCircuitDetails
+from torweb.api.json import JsonCircuit, JsonCircuitDetails
 
 class TorResource(resource.Resource):
 

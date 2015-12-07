@@ -12,7 +12,7 @@ h1 Circuits
         td
           a.btn.btn-primary(role="button", href="#/circuits/{{circuit.id}}") {{circuit.id}}
         td
-          button.btndiv{{circuit.status}} (class="{{circuit status | statusButton}} ")
+          button.btn(class="{{circuit.status | statusButton}}") {{circuit.status}}
         td
           span(ng-repeat="path in circuit.path") {{path.name}} &#62; 
           i Internet

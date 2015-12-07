@@ -8,7 +8,7 @@ from autobahn.twisted.websocket import WebSocketServerFactory
 import json
 import txtorcon
 from zope.interface import implements
-from api.json import JsonCircuit
+from torweb.api.json import JsonCircuit
 class WebsocketMessage(object):
     def json(self):
         return json.dumps(self.obj, ensure_ascii=False).encode('utf8')
