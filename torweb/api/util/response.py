@@ -1,13 +1,4 @@
 import json as j
-import datetime
-def object_to_dict(obj, attributes):
-	result = {}
-	for attr in attributes:
-		value = getattr(obj, attr)
-		if isinstance(value, datetime.datetime):
-			value = value.isoformat()
-		result[attr] = value
-	return result
 
 def json(func):
 	def new_func(*args):
