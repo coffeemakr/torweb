@@ -1,4 +1,8 @@
 #!/bin/sh
 virtualenv virt
-source virt/bin/activate
+. virt/bin/activate
 pip install -r requirements.txt
+
+npm install
+export PATH=node_modules/.bin:$PATH
+bower install

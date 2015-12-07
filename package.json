@@ -1,0 +1,25 @@
+{
+  "name": "torweb",
+  "version": "0.0.0",
+  "description": "Tor Control Webinterface",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coffeemakr/torweb.git"
+  },
+  "dependencies":{
+    "bower": "1.x.x",
+    "jade": ">=1.11.0"
+  },
+  "author": "coffeemakr",
+  "license": "GPLv2",
+  "bugs": {
+    "url": "https://github.com/coffeemakr/torweb/issues"
+  }
+}
