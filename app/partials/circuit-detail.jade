@@ -14,9 +14,11 @@
   .table-responsive
     table.table.table-striped
       thead
-        th Name
-        th Fingerprint
+        tr
+          th Name
+          th Fingerprint
       tbody
         tr(ng-repeat="path in circuit.path")
           td {{path.name}}
           td {{path.fingerprint}}
+

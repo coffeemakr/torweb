@@ -4,8 +4,9 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 from torweb.api.ressources.circuit import CircuitRoot
 import torweb.api.websocket
 from stem.control import Controller
-
+import txtorcon
 import os
+
 class RootResource(resource.Resource):
     def __init__(self, basedir):
         resource.Resource.__init__(self)
@@ -24,8 +25,15 @@ class ApiRessource(resource.Resource):
         self.controller = Controller.from_port(port=port)
         connection = TCP4ClientEndpoint(reactor, "localhost", port)
         self.controller.authenticate()
-        self.putChild('circuit', CircuitRoot(self.controller))
-        self.putChild('websocket', torweb.api.websocket.get_ressource(connection))
+        tor_connection = txtorcon.build_tor_connection(connection)
+        self.circuitRoot = CircuitRoot()
+        tor_connection.addCallback(self.txtorCallback)
+        self.putChild('circuit', self.circuitRoot)
+        self.websocket = torweb.api.websocket.get_ressource(connection)
+        self.putChild('websocket', self.websocket)
+
+    def txtorCallback(self, state):
+        self.circuitRoot.set_torstate(state)
 
 def main():
     import sys

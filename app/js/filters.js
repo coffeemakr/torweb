@@ -9,19 +9,19 @@ angular.module('torstatFilters', []).filter('checkmark', function() {
 });
 
 
-angular.module('torstatFilters', []).filter('statusButton', function() {
+angular.module('torstatFilters', []).filter('statusStyleSuffix', function() {
   return function(input) {
   	var css = {
-  		'NEW': 'btn-info',
-		'NEWRESOLVE': 'btn-info',
-		'REMAP': 'btn-info',
-		'SENTCONNECT': 'btn-info',
-		'SENTRESOLVE': 'btn-info',
-		'SUCCEEDED': 'btn-success',
-		'BUILT': 'btn-success',
-		'FAILED': 'btn-danger',
-		'CLOSED': 'btn-secondary',
-		'DETACHED': 'btn-secondary'
+  		'NEW': 'info',
+		'NEWRESOLVE': 'info',
+		'REMAP': 'info',
+		'SENTCONNECT': 'info',
+		'SENTRESOLVE': 'info',
+		'SUCCEEDED': 'success',
+		'BUILT': 'success',
+		'FAILED': 'danger',
+		'CLOSED': 'secondary',
+		'DETACHED': 'secondary'
   	}
 	return css[input];
   };

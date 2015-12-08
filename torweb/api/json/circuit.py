@@ -1,24 +1,20 @@
 import json
 import datetime
+import txtorcon
 
 class JsonObject(object):
-    def __init__(self, stem=None, txtor=None):
-        self.stem = stem
+    def __init__(self, txtor):
         self.txtor = txtor
 
     def as_dict(self):
         result = {}
-        if self.txtor is not None:
-            obj = self.txtor
-            obj_attrs = self.txtor_attributes
-        else:
-            obj = self.stem
-            obj_attrs = self.stem_attributes
-
-        for i, attr in enumerate(self.json_attributes):
-            value = getattr(obj, obj_attrs[i])
+        obj = self.txtor
+        for attr in self.attributes:
+            value = getattr(obj, attr)
             if isinstance(value, datetime.datetime):
                 value = value.isoformat()
+            elif isinstance(value, txtorcon.util.NetLocation):
+                value = {'cc': value.countrycode}
             result[attr] = value
         return result
 
@@ -26,55 +22,33 @@ class JsonObject(object):
         return json.dumps(self.as_dict()).encode('utf8') 
 
 class JsonRouter(JsonObject):
-    json_attributes = (
-        'fingerprint',
+    attributes = (
         'name',
-        'flags'
-    )
-    stem_attributes = (
-        'fingerprint',
-        'name',
-        'flags'
-    )
-    txtor_attributes = (
         'unique_name',
-        'name',
-        'flags'
+        'modified',
+        'location',
+        'flags',
+        'bandwidth',
+        'policy',
+        'ip'
     )
 
 class JsonCircuit(JsonObject):
 
-    json_attributes = (
-        'id',
-        'status',
-        'purpose',
-        'path'
-    )
-
-    stem_attributes = (
-        'id',
-        'status',
-        'purpose',
-        'path'
-    )
-    txtor_attributes = (
+    attributes = (
         'id',
         'state',
         'purpose',
-        'path'
+        'path',
+#        'is_built'
     )
         
     def get_path(self, path):
         result = []
         if self.txtor is not None:
             for router in path:
-                result.append(JsonRouter(txtor=router).as_dict())
-        else:
-            for fingerprint, name in path:
-                result.append({
-                    'fingerprint': fingerprint,
-                    'name': name
-                })
+                print(dir(router))
+                result.append(JsonRouter(router).as_dict())
         return result
 
     def as_dict(self):
@@ -83,18 +57,18 @@ class JsonCircuit(JsonObject):
         return result
 
 class JsonCircuitDetails(JsonCircuit):
-    json_attributes = (
-    'id',
-    'status',
-    'path',
-    'build_flags',
-    'purpose',
-    'hs_state',
-    'rend_query',
-    'created',
-    'reason',
-    'remote_reason',
-    'socks_username',
-    'socks_password',
+    
+    attributes = (
+        'id',
+        'status',
+        'path',
+        'build_flags',
+        'purpose',
+        'hs_state',
+        'rend_query',
+        'created',
+        'reason',
+        'remote_reason',
+        'socks_username',
+        'socks_password',
     )
-    stem_attributes = json_attributes

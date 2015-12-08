@@ -5,63 +5,50 @@ from torweb.api.json import JsonCircuit, JsonCircuitDetails
 
 class TorResource(resource.Resource):
 
-	def check_controller(self):
-		return self._controller
+	def get_torstate(self):
+		return self._torstate
 
-	def get_contoller(self):
-		return self._controller
+	def set_torstate(self, torstate):
+		self._torstate = torstate
 
-	def set_controller(self, controller):
-		self._controller = controller
+	torstate = property(get_torstate)
 
-	controller = property(get_contoller, set_controller)
-
-	def __init__(self, controller):
+	def __init__(self, torstate=None):
 		resource.Resource.__init__(self)
-		self.set_controller(controller)
-
+		self._torstate = torstate
 
 class CircuitRoot(TorResource):
 	def getChild(self, path, request):
 		if not path:
-			return CircuitList(self.controller)
+			return CircuitList(self.torstate)
 		try:
 			print path
-			return Circuit.from_id(path, controller=self.controller)
-		except ValueError:
+			return Circuit(self.torstate.circuits[int(path)])
+		except KeyError, ValueError:
 			return resource.NoResource("No such circuit.")
 
 class CircuitList(TorResource):
+	
 	@response.json
 	def render_GET(self, request):
 		result = []
-		for c in self.controller.get_circuits():
-			result.append(JsonCircuit(stem=c).as_dict())
+		for c in self.torstate.circuits.values():
+			result.append(JsonCircuit(c).as_dict())
 		return result
 
-class Circuit(TorResource):
+class Circuit(resource.Resource):
 
 	isLeaf = True
 
-	def __init__(self, circuit, controller):
-		TorResource.__init__(self, controller)
+	def __init__(self, circuit):
+		resource.Resource.__init__(self)
 		self.circuit = circuit
 
-	@classmethod
-	def from_id(cls, id, controller):
-		circuit = controller.get_circuit(id)
-		return cls(circuit, controller)
-
 	def render_GET(self, request):
-		return JsonCircuitDetails(stem=self.circuit).json()
+		return JsonCircuitDetails(self.circuit).json()
 	
 	@response.json
 	def render_DELETE(self, request):
-		error = False;
-		try:
-			self.controller.close_circuit(self.circuit.id)
-		except stem.InvalidArguments:
-			return resource.NoResource()
-		except stem.InvalidRequest:
-			error = True
-		return {'success': not error}
+		self.circuit.close()
+		return {}
+

@@ -7,20 +7,23 @@ h1 Circuits
       th Status
       th Path
       th Actions
-    tbody(ng-repeat="circuit in circuits")
-      tr
+    tbody
+      tr(ng-repeat="circuit in circuits")
         td
           a.btn.btn-primary(role="button", href="#/circuits/{{circuit.id}}") {{circuit.id}}
         td
-          button.btn(class="{{circuit.status | statusButton}}") {{circuit.status}}
+          span.label(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
         td
-          span(ng-repeat="path in circuit.path") {{path.name}} &#62; 
+          span(ng-repeat="router in circuit.path")
+            span(title="{{router.ip}}") {{router.name}}
+            | &nbsp;
+            span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
+            | &#62; 
           i Internet
         td
-          a.btn.btn-danger(ng-if="circuit.status == 'BUILT'", ng-click="deleteCircuit(circuit.id)", role="button")
+          a.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit.id)", role="button")
             span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
-            | Delete
-//
+            | Close
   {{drawGraph("circuitsgraph")}}
   <div ng-repeat="circuit in circuits">
   {{addToGraph(circuit)}}
