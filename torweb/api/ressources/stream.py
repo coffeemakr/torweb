@@ -9,11 +9,19 @@ class StreamRoot(TorResource):
 	def getChild(self, id, request):
 		if not id:
 			return StreamList(self.torstate)
+		
 		try:
-			return Stream(self.torstate.streams[id])
-		except KeyError, ValueError:
-			raise
-			return resource.NoResource("No such stream.")
+			id = int(id)
+		except ValueError:
+			return resource.NoResource("Invalid ID.")
+
+		if id in self.torstate.streams:
+			try:
+				return Stream(self.torstate.streams[id])
+			except KeyError:
+				pass
+
+		return resource.NoResource(repr(self.torstate.streams.keys()))
 
 
 class StreamList(TorResource):
