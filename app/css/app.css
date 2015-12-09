@@ -14,3 +14,14 @@
 	margin-left: -0.2em;
 	font-weight: bold;
 }
+
+.path{
+	display:table;
+    width:100%;
+    table-layout:fixed;
+}
+
+.path .router{
+	text-align: center;
+	display:table-cell;
+}

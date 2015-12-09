@@ -6,6 +6,7 @@ h1 Circuits
       th Id
       th Status
       th Path
+      th Last Node IP
       th Actions
       //
         th
@@ -16,12 +17,13 @@ h1 Circuits
         td
           span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
         td
-          span(ng-repeat="router in circuit.path")
-            a(title="{{router.ip}}", href="#/router/{{router.id}}") {{router.name}}
-            | &nbsp;
-            span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
-            | &#62; 
-          i Internet
+          .path
+            .router(ng-repeat="router in circuit.path")
+              a(title="{{router.ip}}", href="#/router/{{router.id}}") {{router.name}}
+              | &nbsp;
+              span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
+        td
+          {{circuit.path[circuit.path.length-1].ip}}
         td
           a.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit.id)", role="button")
             span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
