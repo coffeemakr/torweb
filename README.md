@@ -1,9 +1,20 @@
 # torweb
 
-The webinterface uses:
+Application uses:
  * angular-js
- * twisted webserver server
- * stem
+ * twisted
+ * autobahn (twisted)
  * txtorcon
- 
-![Screenshot](screenshot.png)
+
+## Screenshots
+### Circuit List 
+![Screenshot Circuit List](screenshot_circuits.png)
+
+### Circuit Details 
+![Screenshot Circuit Details](screenshot_circuit.png)
+
+### Router Details
+![Screenshot Circuit List](screenshot_router.png)
+
+### Streams
+![Screenshot Circuit List](screenshot_.png)

@@ -108,8 +108,8 @@ torstatServices
 	.factory('OnionooRouter', ['$resource', 'onionooURL', function($resource, onionooURL){
 		return $resource(onionooURL + "details?lookup=:routerId", {}, {});
 	}])
-	.factory('Router', ['$resource', '$TorResource', function($TorResource){
-		return $TorResource($resource);
+	.factory('Router', ['$TorResource', function($TorResource){
+		return $TorResource('router');
 	}])
 	.factory('ReverseDNS', ['$resource', 'baseURL', function($resource, baseURL) {
 	    return $resource(baseURL + 'dns/reverse/:ip', {}, {});
