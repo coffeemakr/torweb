@@ -15,8 +15,7 @@ var UpdateCtrl = torstatControllers.controller('UpdateCtrl', ['$scope', 'LogServ
 			var logger = LogService;
 			if(typeof evt != 'undefined') {
 				$rootScope.$broadcast(evt.type, evt.data);
-				logger.log(evt.type+ ": " + evt.data);
-				console.log(evt.type, ": Event data: ", evt.data);
+				logger.log(evt.data.action + " " + evt.type +": " + evt.data.id);
 			}
 		});
 	}
@@ -31,7 +30,9 @@ torstatControllers
 			var found = false;
 			for (var i = $scope.streams.length - 1; i >= 0; i--) {
 				if($scope.streams[i].id !== null && $scope.streams[i].id == stream.id){
+					var circuit = $scope.streams[i].circuit;
 					$scope.streams[i] = stream;
+					$scope.streams[i].circuits = circuit;
 					found = true;
 					break;
 				}
@@ -51,49 +52,23 @@ torstatControllers
 		};
 
 	}])
-	.controller('CircuitListCtrl', ['$scope', 'Circuits', '$rootScope', 'LogService',
-	  function($scope, Circuits, $rootScope, logger) {
-	  	
+	.controller('CircuitListCtrl', ['$scope', 'Circuits', 'LogService',
+	  function($scope, Circuits, logger) {
 	  	$scope.circuits = Circuits.query();
-	  	$scope.deleteCircuit = function(id) {
-	  		var scope = $scope;
-	  		Circuits.delete({circuitId: id}, function(response){
+		
+		$scope.deleteCircuit = function(id) {
+	  		Circuits.delete({id: id}, function(response){
 	  			console.log("Circuit deleted: " + response)
 	  		});
 	  	}
-
-	  	function updateCircuit(circuit_desc){
-	  		var circuit = null;
-	  		for (var i = $scope.circuits.length - 1; i >= 0; i--) {
-				if($scope.circuits[i].id == circuit_desc.id){
-					circuit = $scope.circuits[i];
-					break;
-				}
-			};
-			if(circuit === null) {
-				var circuit = circuit_desc;
-				$scope.circuits.push(circuit);
-			}else{
-				console.log(circuit);
-				for(var attr in circuit_desc){
-					circuit[attr] = circuit_desc[attr];
-				}
-			}
-	  	}
-
-	   $rootScope.$on('circuit', function(bc, evt){
-			updateCircuit(evt.circuit);
-	    });
-
 		$scope.update = function(){
-			var scope = $scope;
-			scope.circuits = Circuits.query(); 
+			$scope.circuits = Circuits.query(); 
 		}
 }]);
 
 torstatControllers.controller('CircuitDetailCtrl', ['$scope', '$routeParams', 'Circuits',
   function($scope, $routeParams, Circuits) {
-    $scope.circuit = Circuits.get({circuitId: $routeParams.circuitId}, function(circuit){
+    $scope.circuit = Circuits.get({id: $routeParams.circuitId}, function(circuit){
   		// get circuit callback
     });
   }]);
