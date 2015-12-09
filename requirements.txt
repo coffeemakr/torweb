@@ -1,4 +1,4 @@
 twisted
 txtorcon
 autobahn[twisted]
-stem
+selenium

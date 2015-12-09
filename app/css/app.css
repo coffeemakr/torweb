@@ -6,6 +6,9 @@
 	overflow: scroll;
 }
 
+main {
+	margin-top:2em;
+}
 
 .property {
 	padding:1em;
