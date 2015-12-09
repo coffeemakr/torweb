@@ -17,4 +17,4 @@ Application uses:
 ![Screenshot Circuit List](screenshot_router.png)
 
 ### Streams
-![Screenshot Circuit List](screenshot_.png)
+![Screenshot Circuit List](screenshot_streams.png)
