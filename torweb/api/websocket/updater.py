@@ -8,12 +8,13 @@ from autobahn.twisted.websocket import WebSocketServerFactory
 import json
 import txtorcon
 from zope.interface import implements
-from torweb.api.json import JsonCircuit
+from torweb.api.json import JsonCircuit, JsonStream
 class WebsocketMessage(object):
     def json(self):
         return json.dumps(self.obj, ensure_ascii=False).encode('utf8')
 
 EVENT_TYPE_CIRCUIT = "circuit"
+EVENT_TYPE_STREAM = "stream"
 EVENT_CIRCUIT_NEW = "new"
 EVENT_CIRCUIT_LAUNCHED = "launched"
 EVENT_CIRCUIT_EXTEND = "extend"
@@ -21,9 +22,15 @@ EVENT_CIRCUIT_BUILT = "built"
 EVENT_CIRCUIT_CLOSED = "closed"
 EVENT_CIRCUIT_FAILED = "failed"
 
+EVENT_STREAM_NEW = "new"
+EVENT_STREAM_SUCCEEDED = "succeeded"
+EVENT_STREAM_ATTACH = "attach"
+EVENT_STREAM_DETACH = "detach"
+EVENT_STREAM_CLOSED = "closed"
+EVENT_STREAM_FAILED = "failed"
 
 class MyServerProtocol(WebSocketServerProtocol):
-    implements(txtorcon.ICircuitListener)
+    implements(txtorcon.ICircuitListener, txtorcon.IStreamListener)
 
     def onMessage(self, payload, isBinary):
         if not isBinary:
@@ -49,7 +56,15 @@ class MyServerProtocol(WebSocketServerProtocol):
         self.sendEvent(EVENT_TYPE_CIRCUIT, 
             {
                 'action': action,
-                'circuit': JsonCircuit(txtor=circuit).as_dict()
+                'circuit': JsonCircuit(circuit).as_dict()
+            });
+
+
+    def sendStreamEvent(self, action, stream):
+        self.sendEvent(EVENT_TYPE_STREAM, 
+            {
+                'action': action,
+                'stream': JsonStream(stream).as_dict()
             });
 
     def circuit_new(self, circuit):
@@ -71,6 +86,25 @@ class MyServerProtocol(WebSocketServerProtocol):
         self.sendCircuitEvent(EVENT_CIRCUIT_FAILED, circuit)
 
 
+
+    def stream_new(self, stream):
+        self.sendStreamEvent(EVENT_STREAM_NEW, stream)
+
+    def stream_succeeded(self, stream):
+        self.sendStreamEvent(EVENT_STREAM_SUCCEEDED, stream)
+
+    def stream_attach(self, stream, circuit):
+        self.sendStreamEvent(EVENT_STREAM_ATTACH, stream)
+
+    def stream_detach(self, stream, **kw):
+        self.sendStreamEvent(EVENT_STREAM_DETACH, stream)
+
+    def stream_closed(self, stream, **kw):
+        self.sendStreamEvent(EVENT_STREAM_CLOSED, stream)
+
+    def stream_failed(self, stream, **kw):
+        self.sendStreamEvent(EVENT_STREAM_FAILED, stream)
+
 def get_server_factory(connection):
     factory = TorWebSocketServerFactory()
     factory.protocol = MyServerProtocol
@@ -86,6 +120,7 @@ class TorWebSocketServerFactory(WebSocketServerFactory):
     def buildProtocol(self, *args, **kwargs):
         proto = super(TorWebSocketServerFactory, self).buildProtocol(*args, **kwargs)
         self.state.add_circuit_listener(proto)
+        self.state.add_stream_listener(proto)
         print("listener added!")
         return proto
 

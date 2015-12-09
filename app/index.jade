@@ -10,6 +10,8 @@ html(lang="en", ng-app="torstatApp")
     link(rel="stylesheet", href="css/app.css")
     // Flags css
     link(rel="stylesheet", href="components/flag-icon-css/css/flag-icon.min.css")
+    // Icons css
+    link(rel="stylesheet", href="components/octicons/octicons/octicons.css")
     // Angular js
     script(src="components/angular/angular.js")
     script(src="components/angular-route/angular-route.js")
@@ -20,7 +22,25 @@ html(lang="en", ng-app="torstatApp")
     script(src="js/filters.js")
     script(src="js/controllers.js")
     script(src="js/services.js")
+
+    title Torweb
   body
+    header.container
+      nav.navbar.navbar-dark.bg-inverse
+        a.navbar-brand(href="#") Torweb
+        ul.nav.navbar-nav
+          li.nav-item
+            a.nav-link(href="#/circuits")
+              | Circuits
+              span.sr-only
+          li.nav-item
+            a.nav-link(href="#/streams")
+              | Streams
+              span.sr-only
+        form.form-inline.navbar-form.pull-right
+          input.form-control(type="text", placeholder="Search")
+          button.btn.btn-success-outline(type="submit") Search
+
     .container(ng-view="")
     .container(ng-controller="UpdateCtrl")
       h2 Logs

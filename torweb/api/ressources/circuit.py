@@ -1,21 +1,9 @@
 from twisted.web import resource
 from torweb.api.util import response
-import stem
 from torweb.api.json import JsonCircuit, JsonCircuitDetails
+from .base import TorResource
 
-class TorResource(resource.Resource):
-
-	def get_torstate(self):
-		return self._torstate
-
-	def set_torstate(self, torstate):
-		self._torstate = torstate
-
-	torstate = property(get_torstate)
-
-	def __init__(self, torstate=None):
-		resource.Resource.__init__(self)
-		self._torstate = torstate
+__all__ = ('CircuitRoot', 'CircuitList', 'Circuit')
 
 class CircuitRoot(TorResource):
 	def getChild(self, path, request):
@@ -44,6 +32,7 @@ class Circuit(resource.Resource):
 		resource.Resource.__init__(self)
 		self.circuit = circuit
 
+	@response.json
 	def render_GET(self, request):
 		return JsonCircuitDetails(self.circuit).json()
 	

@@ -5,3 +5,12 @@
 	max-height: 300px;
 	overflow: scroll;
 }
+
+
+.property {
+	padding:0.2em;
+}
+.property .title{
+	margin-left: -0.2em;
+	font-weight: bold;
+}

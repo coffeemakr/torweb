@@ -2,7 +2,7 @@
   .col-sm-10
     h1  Circuit {{circuit.id}}
   div
-    a.btn(class="{{circuit.status | statusButton}}") {{circuit.status}}
+    span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
   .row
     .col-md-2 Created on
     .col-md-10 {{ circuit.created| date:"medium"}}
