@@ -43,7 +43,7 @@ torstatApp.config(['$routeProvider',
         templateUrl: 'partials/circuit-list.html',
         controller: 'CircuitListCtrl'
       }).
-      when('/circuits/:circuitId', {
+      when('/circuit/:circuitId', {
         templateUrl: 'partials/circuit-detail.html',
         controller: 'CircuitDetailCtrl'
       }).

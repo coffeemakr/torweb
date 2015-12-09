@@ -1,24 +1,34 @@
+h1  Circuit {{circuit.id}}
 .row
-  .col-sm-10
-    h1  Circuit {{circuit.id}}
-  div
-    span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
-  .row
-    .col-md-2 Created on
-    .col-md-10 {{ circuit.created| date:"medium"}}
-  .row
-    .col-md-2 Build Flags
-    .col-md-10
-      span(ng-repeat="flag in circuit.build_flags") {{flag}} 
-  h2 Nodes
-  .table-responsive
-    table.table.table-striped
-      thead
-        tr
-          th Name
-          th Fingerprint
-      tbody
-        tr(ng-repeat="path in circuit.path")
-          td {{path.name}}
-          td {{path.fingerprint}}
+  .col-lg-4
+    .property
+      .title Status
+      .value
+        span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
+  .col-lg-4
+    .property
+      .title Build Flags
+      .value
+        span(ng-repeat="flag in circuit.build_flags") {{flag}} 
+  .col-lg-4
+    .property
+      .title Created on
+      .value {{ circuit.time_created| date:"medium"}}
+
+h2 Nodes
+.table-responsive
+  table.table.table-striped
+    thead
+      tr
+        th Name
+        th Fingerprint
+        th IP Address
+        th 
+    tbody
+      tr(ng-repeat="router in circuit.path")
+        td {{router.name}}
+        td {{router.id}}
+        td {{router.ip}}
+        td
+          a.btn.btn-primary(role="button", href="#/router/{{router.id}}") Details
 

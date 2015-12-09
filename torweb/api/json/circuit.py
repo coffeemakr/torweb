@@ -27,15 +27,9 @@ class JsonCircuitDetails(JsonCircuit):
     
     attributes = (
         'id',
-        'status',
+        'state',
+        'purpose',
         'path',
         'build_flags',
-        'purpose',
-        'hs_state',
-        'rend_query',
-        'created',
-        'reason',
-        'remote_reason',
-        'socks_username',
-        'socks_password',
+        'time_created'
     )

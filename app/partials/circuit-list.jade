@@ -12,7 +12,7 @@ h1 Circuits
     tbody
       tr(ng-repeat="circuit in circuits")
         td
-          a.btn.btn-primary(role="button", href="#/circuits/{{circuit.id}}") {{circuit.id}}
+          a.btn.btn-primary(role="button", href="#/circuit/{{circuit.id}}") {{circuit.id}}
         td
           span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
         td
