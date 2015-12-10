@@ -3,9 +3,8 @@
 /* Controllers */
 var torstatControllers = angular.module('torstatControllers',[]);
 
-
-var UpdateCtrl = torstatControllers.controller('UpdateCtrl', ['$scope', 'LogService', 'TorstatWebsocket', '$rootScope',
-	function($scope, LogService, TorstatWebsocket, $rootScope){
+torstatControllers
+	.controller('UpdateCtrl', ['$scope', 'LogService', 'TorstatWebsocket', '$rootScope', function($scope, LogService, TorstatWebsocket, $rootScope){
 		$scope.Events = [];
 		$scope.Logs = LogService.logs;
 		LogService.log("Waiting for messages.");
@@ -18,11 +17,7 @@ var UpdateCtrl = torstatControllers.controller('UpdateCtrl', ['$scope', 'LogServ
 				logger.log(evt.data.action + " " + evt.type +": " + evt.data.id);
 			}
 		});
-	}
-
-]);
-
-torstatControllers
+	}])
 	.controller('StreamListCtrl', ['$scope', 'Stream', function($scope, Stream){
 		$scope.streams = Stream.query();
 		
