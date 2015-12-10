@@ -1,34 +1,38 @@
-h1  Circuit {{circuit.id}}
-.row
-  .col-lg-4
-    .property
-      .title Status
-      .value
-        span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
-  .col-lg-4
-    .property
-      .title Build Flags
-      .value
-        span(ng-repeat="flag in circuit.build_flags") {{flag}} 
-  .col-lg-4
-    .property
-      .title Created on
-      .value {{ circuit.time_created| date:"medium"}}
+.errorpage(ng-if="circuit.error", class="{{circuit.error.status}}")
+  h1 Router Error: {{circuit.error.status}}
+  h2 {{circuit.error.statusText}}
+div(ng-if="!circuit.error")
+  h1  Circuit {{circuit.id}}
+  .row
+    .col-lg-4
+      .property
+        .title Status
+        .value
+          span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
+    .col-lg-4
+      .property
+        .title Build Flags
+        .value
+          span(ng-repeat="flag in circuit.build_flags") {{flag}} 
+    .col-lg-4
+      .property
+        .title Created on
+        .value {{ circuit.time_created| date:"medium"}}
 
-h2 Nodes
-.table-responsive
-  table.table.table-striped
-    thead
-      tr
-        th Name
-        th Fingerprint
-        th IP Address
-        th 
-    tbody
-      tr(ng-repeat="router in circuit.path")
-        td {{router.name}}
-        td {{router.id}}
-        td {{router.ip}}
-        td
-          a.btn.btn-primary(role="button", href="#/router/{{router.id}}") Details
+  h2 Nodes
+  .table-responsive
+    table.table.table-striped
+      thead
+        tr
+          th Name
+          th Fingerprint
+          th IP Address
+          th 
+      tbody
+        tr(ng-repeat="router in circuit.path")
+          td {{router.name}}
+          td {{router.id}}
+          td {{router.ip}}
+          td
+            a.btn.btn-primary(role="button", href="#/router/{{router.id}}") Details
 

@@ -1,48 +1,52 @@
-h1 Circuits
-// <div id="circuitsgraph" style="height: 400px; max-width:500px"></div>
-.table-responsive
-  table.table.table-striped
-    thead
-      th Id
-      th Status
-      th Path
-      th Last Node IP
-      th Actions
-      //
-        th
-    tbody
-      tr(ng-repeat="circuit in circuits")
-        td
-          a.btn.btn-primary(role="button", href="#/circuit/{{circuit.id}}") {{circuit.id}}
-        td
-          span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
-        td
-          .path
-            .router(ng-repeat="router in circuit.path")
-              a(title="{{router.ip}}", href="#/router/{{router.id}}") {{router.name}}
-              | &nbsp;
-              span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
-        td
-          {{circuit.path[circuit.path.length-1].ip}}
-        td
-          a.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit.id)", role="button")
-            span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
-            | Close
+.errorpage(ng-if="circuits.error", class="{{circuits.error.status}}")
+  h1 Router Error: {{circuits.error.status}}
+  h2 {{circuits.error.statusText}}
+div(ng-if="!circuits.error")
+  h1 Circuits
+  // <div id="circuitsgraph" style="height: 400px; max-width:500px"></div>
+  .table-responsive
+    table.table.table-striped
+      thead
+        th Id
+        th Status
+        th Path
+        th Last Node IP
+        th Actions
         //
+          th
+      tbody
+        tr(ng-repeat="circuit in circuits")
           td
-            .btn-group
-              button.btn.btn-secondary.dropdown-toggle(type="button", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
-                | Action
-              .dropdown-menu
-                a.dropdown-item(href="#") Action
-                a.dropdown-item(href="#") Another action
-                a.dropdown-item(href="#") Something else here
-                .dropdown-divider
-                a.dropdown-item(href="#") Separated link
+            a.btn.btn-primary(role="button", href="#/circuit/{{circuit.id}}") {{circuit.id}}
+          td
+            span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
+          td
+            .path
+              .router(ng-repeat="router in circuit.path")
+                a(title="{{router.ip}}", href="#/router/{{router.id}}") {{router.name}}
+                | &nbsp;
+                span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
+          td
+            {{circuit.path[circuit.path.length-1].ip}}
+          td
+            a.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit.id)", role="button")
+              span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
+              | Close
+          //
+            td
+              .btn-group
+                button.btn.btn-secondary.dropdown-toggle(type="button", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                  | Action
+                .dropdown-menu
+                  a.dropdown-item(href="#") Action
+                  a.dropdown-item(href="#") Another action
+                  a.dropdown-item(href="#") Something else here
+                  .dropdown-divider
+                  a.dropdown-item(href="#") Separated link
 
 
-  //
-    {{drawGraph("circuitsgraph")}}
-    <div ng-repeat="circuit in circuits">
-    {{addToGraph(circuit)}}
-    </div>
+    //
+      {{drawGraph("circuitsgraph")}}
+      <div ng-repeat="circuit in circuits">
+      {{addToGraph(circuit)}}
+      </div>

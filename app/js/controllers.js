@@ -38,9 +38,7 @@ torstatControllers
 			$scope.circuits = Circuits.query();
 
 			$scope.deleteCircuit = function(id) {
-				Circuits.delete({id: id}, function(response){
-					console.log("Circuit deleted: " + response)
-				});
+				var promise = Circuits.delete({id: id});
 			}
 			$scope.update = function(){
 				$scope.circuits = Circuits.query(); 

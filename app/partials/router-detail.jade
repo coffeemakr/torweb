@@ -1,43 +1,47 @@
-h1 Router: {{router.name}}
-.btn-group(role="group")
-	button.btn.btn-secondary(type="button", ng-click="reverseDNS(router)") Reverse DNS
-	a.btn.btn-secondary(target="_blank", href="https://atlas.torproject.org/#details/{{router.id}}", title="Show this Router in the Tor Atlas" ) Atlas
-	button.btn.btn-secondary(type="button", ng-click="askOnionooo()") Ask Onionoo
-.row
-	.col-md-4
-		.property
-			.title Name
-			.value {{router.name}}
-		.property(style="overflow:hidden")
-			.title Fingerprint/ID
-			.value {{router.unique_name}}
-		.property
-			.title IP
-			.value {{router.ip}}
-		.property(ng-if="router.hostname")
-			.title Hostname
-			| {{router.hostname}}
-		.property(ng-if="router.dir_address")
-			.title Dir Address
-			| {{router.dir_address}}
-	.col-md-4
-		.property
-			.title Flags
-			span.label.label-pill.label-default(ng-repeat="flag in router.flags")
-				span(ng-if="flag | RouterFlags")
-					span.octicon(class="octicon-{{flag | RouterFlags}}")
-					| &nbsp;
-				| {{flag}}
-		.property
-			.title Bandwidth
-			| {{router.bandwidth | Bytes}}/s
+.errorpage(ng-if="router.error", class="{{router.error.status}}")
+	h1 Router Error: {{router.error.status}}
+	h2 {{router.error.statusText}}
+div(ng-if="!router.error")
+	h1 Router: {{router.name}}
+	.btn-group(role="group")
+		button.btn.btn-secondary(type="button", ng-click="reverseDNS(router)") Reverse DNS
+		a.btn.btn-secondary(target="_blank", href="https://atlas.torproject.org/#details/{{router.id}}", title="Show this Router in the Tor Atlas" ) Atlas
+		button.btn.btn-secondary(type="button", ng-click="askOnionooo()") Ask Onionoo
+	.row
+		.col-md-4
+			.property
+				.title Name
+				.value {{router.name}}
+			.property(style="overflow:hidden")
+				.title Fingerprint/ID
+				.value {{router.unique_name}}
+			.property
+				.title IP
+				.value {{router.ip}}
+			.property(ng-if="router.hostname")
+				.title Hostname
+				| {{router.hostname}}
+			.property(ng-if="router.dir_address")
+				.title Dir Address
+				| {{router.dir_address}}
+		.col-md-4
+			.property
+				.title Flags
+				span.label.label-pill.label-default(ng-repeat="flag in router.flags")
+					span(ng-if="flag | RouterFlags")
+						span.octicon(class="octicon-{{flag | RouterFlags}}")
+						| &nbsp;
+					| {{flag}}
+			.property
+				.title Bandwidth
+				| {{router.bandwidth | Bytes}}/s
 
 
-	.col-md-4
-		.property(ng-if="router.platform")
-			.title Platform
-			| {{router.platform}}
-		.property
-			.title Country
-			.value {{router.location.country}}&nbsp;
-				span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
+		.col-md-4
+			.property(ng-if="router.platform")
+				.title Platform
+				| {{router.platform}}
+			.property
+				.title Country
+				.value {{router.location.country}}&nbsp;
+					span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")

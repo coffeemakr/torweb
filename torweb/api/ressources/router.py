@@ -12,8 +12,7 @@ class RouterRoot(TorResource):
 		try:
 			name = '$' + name
 			return Router(self.torstate.routers[name])
-		except KeyError, ValueError:
-			raise
+		except KeyError:
 			return resource.NoResource("No such router.")
 
 

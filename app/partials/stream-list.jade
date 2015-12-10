@@ -1,27 +1,31 @@
-h1 Streams
-// <div id="circuitsgraph" style="height: 400px; max-width:500px"></div>
-.table-responsive
-  table.table.table-striped
-    thead
-      th Id
-      th State
-      th Circuit
-      th Source
-      th Target Host
-      th Target Address
-      th Actions
-    tbody
-      tr(ng-repeat="s in streams")
-        td {{s.id}}
-        td 
-          span.label.label-pill(class="label-{{s.state | statusStyleSuffix}}") {{s.state}}
-        td
-          a(href="#/circuit/{{s.circuit.id}}")
-            {{s.circuit.id}}
-        td {{s.source_addr}}:{{s.source_port}}
-        td {{s.target_host}}
-        td {{s.target_addr}}:{{s.target_port}}
-        td
-          a.btn.btn-danger(ng-if="s.state != 'CLOSED'", ng-click="deleteStream(s)", role="button")
-            span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
-            | Close
+.errorpage(ng-if="streams.error", class="{{streams.error.status}}")
+  h1 Router Error: {{streams.error.status}}
+  h2 {{streams.error.statusText}}
+div(ng-if="!streams.error")
+  h1 Streams
+  // <div id="circuitsgraph" style="height: 400px; max-width:500px"></div>
+  .table-responsive
+    table.table.table-striped
+      thead
+        th Id
+        th State
+        th Circuit
+        th Source
+        th Target Host
+        th Target Address
+        th Actions
+      tbody
+        tr(ng-repeat="s in streams")
+          td {{s.id}}
+          td 
+            span.label.label-pill(class="label-{{s.state | statusStyleSuffix}}") {{s.state}}
+          td
+            a(href="#/circuit/{{s.circuit.id}}")
+              {{s.circuit.id}}
+          td {{s.source_addr}}:{{s.source_port}}
+          td {{s.target_host}}
+          td {{s.target_addr}}:{{s.target_port}}
+          td
+            a.btn.btn-danger(ng-if="s.state != 'CLOSED'", ng-click="deleteStream(s)", role="button")
+              span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
+              | Close

@@ -13,8 +13,8 @@ torstatServices
 	})
 ;
 
-
-var TorResource = function(resource){
+/** @constructor */
+function TorResource(resource){
 	this.value = {};
 	this.valueIsArray = false;
 	this.setResource(resource);
@@ -37,13 +37,20 @@ TorResource.prototype.setResource = function(resource){
 
 TorResource.prototype.query = function(args){
 	this.value = this.resource.query.apply(this.resource, arguments);
-	this.valueIsArray = true;
 	return this.value;
 }
 
 TorResource.prototype.get = function(args){
 	this.value = this.resource.get.apply(this.resource, arguments);
-	this.valueIsArray = false;
+	var thatValue = this.value;
+	this.value.$promise.then(
+		function(value){
+			console.log(value);
+		},
+		function(error){
+			thatValue["error"] = error;
+		}
+	);
 	return this.value;
 }
 
@@ -57,7 +64,7 @@ function updateObject(src, dst){
 
 TorResource.prototype.update = function(src){
 	var dest = null;
-	if(this.valueIsArray){
+	if(typeof this.value.length != 'undefined'){
 		for (var i = this.value.length - 1; i >= 0; i--) {
 			if(this.value[i][this.idAttribute] == src[this.idAttribute]) {
 				dest = this.value[i];
@@ -116,6 +123,7 @@ torstatServices
 	  }]
 	);
 
+/** @constructor */
 function LogService(){
 	this.logs = [];
 }
@@ -127,6 +135,7 @@ LogService.prototype.log = function(message) {
 	})
 }
 
+/** @type{LogService} */
 var GlobalLogService = null;
 
 
