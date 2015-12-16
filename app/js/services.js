@@ -243,10 +243,6 @@ MenuHandler.prototype.setCurrent = function(id){
 	}
 }
 
-MenuHandler.prototype.getBreadcrumbs = function(){
-	return this.breadcrumbs;
-}
-
 MenuHandler.prototype.setArgs = function(args){
 	this.format_args = args;
 	this.update();
@@ -289,8 +285,11 @@ torstatServices
 	.factory('$TorResource', ['$resource', 'baseURL', '$rootScope',
 		function($resource, baseURL, $rootScope){
 			return function(ressourceName){
+				var idName = ressourceName + 'Id';
+				var queryParams = {};
+				queryParams[idName] = ''; 
 				var res = new TorResource(
-					$resource(baseURL + 'tor/:instanceId/' + ressourceName + '/:id', {}, {query: {method:'GET', params:{id:''}, isArray:true}})
+					$resource(baseURL + 'tor/:instanceId/' + ressourceName + '/:' + idName, {}, {query: {method:'GET', params:queryParams, isArray:true}})
 				);
 				// Register broadcast listener
 				$rootScope.$on(ressourceName, function(bc, evt){
@@ -320,13 +319,13 @@ torstatServices
 			{	"id": 'streamList',
 				"parent": 'instanceDetails',
 				"name": "Streams",
-				"url": "streams",
+				"url": "stream",
 				"isrelative": true
 			},
 			{	"id": 'circuitList',
 				"parent": 'instanceDetails',
 				"name": "Circuits",
-				"url": "circuits",
+				"url": "circuit",
 				"isrelative": true
 			},
 			{	"id": 'streamDetails',
@@ -351,7 +350,7 @@ torstatServices
 		return $TorResource('circuit');
 	}])
 	.factory('TorInstance', ['$resource', 'baseURL', function($resource, baseURL) {
-		return $resource(baseURL + 'tor/:id', {}, {query: {method:'GET', params:{id:''}, isArray:true}})
+		return $resource(baseURL + 'tor/:instanceId', {}, {query: {method:'GET', params:{instanceId:''}, isArray:true}})
 	}])
 	.factory('Stream', ['$TorResource', function($TorResource) {
 	    return $TorResource('stream');

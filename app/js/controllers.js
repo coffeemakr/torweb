@@ -48,35 +48,51 @@ torstatControllers
 			}
 		});
 	}])
-	.controller('InstanceListCtrl', ['$scope', 'MenuHandler', 'TorInstance', function($scope, MenuHandler, TorInstance){
-		MenuHandler.setCurrent("instanceList");
-		$scope.instances = TorInstance.query({},function(data){console.log(data)});
+	.controller('InstanceCtrl', ['$scope', 'MenuHandler', '$routeParams', 'TorInstance', function($scope, MenuHandler, $routeParams, TorInstance){
+		if($routeParams.instanceId) {
+			MenuHandler.setCurrent("instanceDetails");
+			$scope.instance = TorInstance.get($routeParams);
+		}else{
+			MenuHandler.setCurrent("instanceList");
+			$scope.instances = TorInstance.query({},function(data){console.log(data)});
+		}
+		MenuHandler.setArgs($routeParams);
 	}])
-	.controller('InstanceDetailCtrl', ['$scope', 'MenuHandler', '$routeParams', 'TorInstance', function($scope, MenuHandler, $routeParams, TorInstance){
-		MenuHandler.setCurrent("instanceDetails");
-		$scope.tor = TorInstance.get({id: $routeParams.instanceId});
-	}])
-	.controller('StreamListCtrl', ['$scope', 'MenuHandler', '$location', '$routeParams', 'Stream', function($scope, MenuHandler, $location, $routeParams, Stream){
-		MenuHandler.setCurrent("streamList");
-		$scope.streams = Stream.query({instanceId: $routeParams.instanceId});
+	.controller('StreamCtrl', ['$scope', 'MenuHandler', '$location', '$routeParams', 'Stream', function($scope, MenuHandler, $location, $routeParams, Stream){
+		if($routeParams.streamId){
+
+		}else{
+			MenuHandler.setCurrent("streamList");
+			$scope.streams = Stream.query($routeParams);
+		}
+		MenuHandler.setArgs($routeParams);
 		$scope.streamDetails = function(stream){
 			$location.path(MenuHandler.getUrl('streamDetails', {instanceId: $routeParams.instanceId, streamId: stream.id}).url);
 		}
 		$scope.deleteStream = function(stream){
-			Stream.delete({id: stream.id, instanceId: $routeParams.instanceId}, function(){
+			Stream.delete({streamId: stream.id, instanceId: $routeParams.instanceId}, function(){
 				console.log("stream closed")
 			});
 		};
 
 	}])
-	.controller('CircuitListCtrl', ['$scope', 'MenuHandler', '$location', '$routeParams', 'Circuits',
-		function($scope,  MenuHandler, $location, $routeParams, Circuits) {
-			MenuHandler.setCurrent("circuitList");
-			MenuHandler.setArgs({instanceId: $routeParams.instanceId});
+	.controller('CircuitCtrl', ['$scope', 'MenuHandler', '$location', '$routeParams', 'Circuits',
+		function($scope, MenuHandler, $location, $routeParams, Circuits) {
+			if($routeParams.circuitId){
+				MenuHandler.setCurrent("circuitDetails");
+				$scope.circuit = Circuits.get($routeParams);
+			}else{
+				MenuHandler.setCurrent("circuitList");
+				$scope.circuits = Circuits.query($routeParams);
+			}
+			MenuHandler.setArgs($routeParams);
 
-			$scope.circuits = Circuits.query({instanceId: $routeParams.instanceId});
-			$scope.deleteCircuit = function(id) {
-				var promise = Circuits.delete({id: id, instanceId: $routeParams.instanceId});
+			$scope.routerDetails = function(router){
+				$location.path(MenuHandler.getUrl('routerDetails', {instanceId: $routeParams.instanceId, routerId: router.id}).url);
+			}
+
+			$scope.deleteCircuit = function(circuit) {
+				Circuits.delete({circuitId: circuit.id, instanceId: $routeParams.instanceId});
 			}
 			$scope.circuitDetails = function(circuit){
 				$location.path(MenuHandler.getUrl('circuitDetails', {instanceId: $routeParams.instanceId, circuitId: circuit.id}).url);
@@ -84,32 +100,17 @@ torstatControllers
 			$scope.routerDetails = function(router){
 				$location.path(MenuHandler.getUrl('routerDetails', {instanceId: $routeParams.instanceId, routerId: router.id}).url);
 			}
-
-			$scope.update = function(){
-				$scope.circuits = Circuits.query({instanceId: $routeParams.instanceId}); 
-			}
 		}
 	])
-	.controller('CircuitDetailCtrl', ['$scope', 'MenuHandler', '$location', '$routeParams', 'Circuits',
-		function($scope, MenuHandler, $location, $routeParams, Circuits) {
-			MenuHandler.setCurrent("circuitDetails");
-			MenuHandler.setArgs($routeParams);
-
-			$scope.routerDetails = function(router){
-				$location.path(MenuHandler.getUrl('routerDetails', {instanceId: $routeParams.instanceId, routerId: router.id}).url);
-			}
-
-			$scope.circuit = Circuits.get({id: $routeParams.circuitId, instanceId: $routeParams.instanceId});
-		}
-	])
-	.controller('RouterDetailCtrl', ['$scope', 'MenuHandler', '$routeParams', 'Router', 'OnionooRouter', 'ReverseDNS',
+	.controller('RouterCtrl', ['$scope', 'MenuHandler', '$routeParams', 'Router', 'OnionooRouter', 'ReverseDNS',
 		function($scope, MenuHandler, $routeParams, Router, OnionooRouter, ReverseDNS) {
-			MenuHandler.setCurrent("routerDetails");
-			MenuHandler.setArgs($routeParams);
-			$scope.router = Router.get({id: $routeParams.routerId, instanceId: $routeParams.instanceId}, 
-				function(router){
+			if($routeParams.routerId) {
+				MenuHandler.setCurrent("routerDetails");
+				$scope.router = Router.get($routeParams, function(router){
 					MenuHandler.updateArgs({routerName: router.name});
 				});
+			}
+			MenuHandler.updateArgs($routeParams);
 			
 			$scope.reverseDNS = function(router){
 				ReverseDNS.get({ip: router.ip}, function(data){

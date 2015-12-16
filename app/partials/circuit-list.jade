@@ -26,6 +26,6 @@ div(ng-if="!circuits.error")
           td.hidden-md-down
             {{circuit.path[circuit.path.length-1].ip}}
           td
-            button.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit.id)")
+            button.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit)")
               span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
               | Close
