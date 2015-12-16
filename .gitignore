@@ -68,3 +68,6 @@ virt/
 
 # vim swap files
 *.swp
+
+# generated certificates
+*.pem

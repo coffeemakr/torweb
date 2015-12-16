@@ -10,23 +10,23 @@ div(ng-if="!circuits.error")
         th Id
         th Status
         th Path
-        th Last Node IP
+        th.hidden-md-down Last Node IP
         th Actions
         //
           th
       tbody
         tr(ng-repeat="circuit in circuits")
           td
-            a.btn.btn-primary(role="button", href="#/circuit/{{circuit.id}}") {{circuit.id}}
+            a(href="#/circuit/{{circuit.id}}", title="Show the details of this ciruit.") {{circuit.id}}
           td
             span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
           td
             .path
               .router(ng-repeat="router in circuit.path")
-                a(title="{{router.ip}}", href="#/router/{{router.id}}") {{router.name}}
+                a(title="IP: {{router.ip}} (Click to see more information.)", href="#/router/{{router.id}}") {{router.name}}
                 | &nbsp;
                 span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
-          td
+          td.hidden-md-down
             {{circuit.path[circuit.path.length-1].ip}}
           td
             a.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit.id)", role="button")

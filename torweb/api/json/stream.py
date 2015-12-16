@@ -1,5 +1,5 @@
 from .base import JsonObject
-from .circuit import JsonCircuit
+from .circuit import JsonCircuitMinimal
 __all__ = ('JsonStream',)
 
 class JsonStream(JsonObject):
@@ -29,7 +29,7 @@ class JsonStream(JsonObject):
 	def as_dict(self):
 		result = super(JsonStream, self).as_dict()
 		if result['circuit'] is not None:
-			result['circuit'] = JsonCircuit(result['circuit']).as_dict()
+			result['circuit'] = JsonCircuitMinimal(result['circuit']).as_dict()
 		if result['state'] in self.state_text:
 			result['state_text'] = self.state_text[result['state']]
 		else:

@@ -30,3 +30,45 @@ main {
 	text-align: center;
 	display:table-cell;
 }
+
+@media (max-width: 47.9em) {
+	.path .router{
+		display: block;
+	}
+}
+
+
+html, body{
+	height: 100%;
+}
+
+#footerpusher{
+	min-height: 100%;
+	padding-bottom:200px;
+}
+
+footer{
+	/* alignment */
+	margin-top: -200px;
+	height: 200px;
+	padding-top: 3rem;
+	/* box */
+	background-color: rgb(230,230,230);
+	/* font */
+	font-size: 85%;
+}
+
+footer ul{
+	list-style: none;
+	padding: 0;
+	margin: 0 0 1rem 0;
+}
+
+footer ul li {
+	display: inline;
+	padding-right: 4rem;
+}
+footer ul li a {
+	font-weight: bold;
+	color: rgb(120,120,120);
+}

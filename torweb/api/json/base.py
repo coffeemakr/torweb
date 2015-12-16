@@ -1,10 +1,10 @@
 import json
 import datetime
 import txtorcon
-try:
-    import ipaddress
-except ImportError:
-    from txtorcon.util import ipaddr as ipaddress
+from txtorcon.util import ipaddr as ipaddress
+
+
+__all__ = ('JsonObject',)
 
 class JsonObject(object):
     def __init__(self, txtor):

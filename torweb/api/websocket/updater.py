@@ -105,17 +105,14 @@ class MyServerProtocol(WebSocketServerProtocol):
     def stream_failed(self, stream, **kw):
         self.sendStreamEvent(EVENT_STREAM_FAILED, stream)
 
-def get_server_factory(connection):
-    factory = TorWebSocketServerFactory()
-    factory.protocol = MyServerProtocol
-    tor_connection = txtorcon.build_tor_connection(connection)
-    tor_connection.addCallback(factory.setState)
-    return factory
 
 class TorWebSocketServerFactory(WebSocketServerFactory):
-    def setState(self, state):
-        print("state set!!!")
-        self.state = state;
+        
+    protocol = MyServerProtocol
+
+    def set_torstate(self, state):
+        self.state = state
+        return state
 
     def buildProtocol(self, *args, **kwargs):
         proto = super(TorWebSocketServerFactory, self).buildProtocol(*args, **kwargs)
@@ -123,7 +120,3 @@ class TorWebSocketServerFactory(WebSocketServerFactory):
         self.state.add_stream_listener(proto)
         print("listener added!")
         return proto
-
-
-def get_ressource(*args, **kwargs):
-    return WebSocketResource(get_server_factory(*args, **kwargs))

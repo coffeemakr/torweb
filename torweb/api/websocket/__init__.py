@@ -1,1 +1,1 @@
-from .updater import get_ressource
+from .updater import *

@@ -1,0 +1,1 @@
+openssl req -x509 -nodes -newkey rsa:2048 -subj '/CN=localhost' -keyout key.pem -out cert.pem -days 30

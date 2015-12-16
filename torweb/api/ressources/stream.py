@@ -25,7 +25,9 @@ class StreamRoot(TorResource):
 
 
 class StreamList(TorResource):
-	
+
+	isLeaf = True
+
 	@response.json
 	def render_GET(self, request):
 		result = []

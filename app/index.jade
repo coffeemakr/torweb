@@ -25,36 +25,53 @@ html(lang="en", ng-app="torstatApp")
 
     title Torweb
   body
-    header.container
-      nav.navbar.navbar-dark.bg-inverse
-        a.navbar-brand(href="#") Torweb
-        ul.nav.navbar-nav
-          li.nav-item
-            a.nav-link(href="#/circuits")
-              | Circuits
-              span.sr-only
-          li.nav-item
-            a.nav-link(href="#/streams")
-              | Streams
-              span.sr-only
-        form.form-inline.navbar-form.pull-right
-          input.form-control(type="text", placeholder="Search")
-          button.btn.btn-success-outline(type="submit") Search
+    #footerpusher
+      header
+        .container
+          nav.navbar.navbar-dark.bg-inverse
+            a.navbar-brand(href="#/") Torweb
+            ul.nav.navbar-nav
+              li.nav-item
+                a.nav-link(href="#/{{tor.id}}/circuits")
+                  | Circuits
+                  span.sr-only
+              li.nav-item
+                a.nav-link(href="#/{{tor.id}}/streams")
+                  | Streams
+                  span.sr-only
+        .container
+          ol.breadcrumb
+            li(ng-repeat="crumb in breadcrumbs")
+              a(href="{{crumb.url}}") {{crumb.name}}
 
-    main.container(ng-view="")
-    .container(ng-controller="UpdateCtrl")
-      h2 Logs
-      .responsive-table
-        table.table.table-striped
-          thead
-            tr
-              th Time
-              th Message
-          tbody.logcontainer
-            tr(ng-repeat="log in Logs")
-              td {{log.time | date:"medium"}}
-              td {{log.message}}
-    
+          //
+            form.form-inline.navbar-form.pull-right
+              input.form-control(type="text", placeholder="Search")
+              button.btn.btn-success-outline(type="submit") Search
+
+      main.container(ng-view="")
+      .container(ng-controller="UpdateCtrl")
+        h2 Logs
+        .responsive-table
+          table.table.table-striped
+            thead
+              tr
+                th Time
+                th Message
+            tbody.logcontainer
+              tr(ng-repeat="log in Logs")
+                td {{log.time | date:"medium"}}
+                td {{log.message}}
+    footer.text-muted
+      .container
+        ul
+          li
+            a(href="#/about") About
+          li
+            a(title="Show the source or help improving it!", href="https://github.com/coffeemakr/torweb", target="_blank") Github
+          li
+            a(title="You've found a problem? Report it!", href="https://github.com/coffeemakr/torweb/issue/new", target="_blank") Report an issue
+        p Made with love by the Github community.   
     // jQuery first, then Bootstrap JS.
     script(src="components/jquery/dist/jquery.min.js")
     script(src="components/bootstrap/dist/js/bootstrap.js")

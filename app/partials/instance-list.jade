@@ -1,0 +1,5 @@
+.list-group
+  a.list-group-item(ng-repeat="instance in instances" href="#/{{instance.id}}/")
+    h4.list-group-item-heading Instance
+    p.list-group-item-text
+      | Port {{instance.port}}, Host {{instance.host}}

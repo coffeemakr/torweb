@@ -1,6 +1,6 @@
 from twisted.web import resource
 from torweb.api.util import response
-from torweb.api.json import JsonCircuit, JsonCircuitDetails
+from torweb.api.json import JsonCircuit
 from .base import TorResource
 
 __all__ = ('CircuitRoot', 'CircuitList', 'Circuit')
@@ -34,7 +34,7 @@ class Circuit(resource.Resource):
 
 	@response.json
 	def render_GET(self, request):
-		return JsonCircuitDetails(self.circuit).json()
+		return JsonCircuit(self.circuit).json()
 	
 	@response.json
 	def render_DELETE(self, request):
