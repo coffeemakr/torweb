@@ -3,11 +3,6 @@
 /* Controllers */
 var torstatControllers = angular.module('torstatControllers',[]);
 
-function setId($scope, $routeParams){
-	$scope["tor"] = {};
-	$scope["tor"]["id"] = $routeParams["instanceId"];
-}
-
 torstatControllers
 	.controller('UpdateCtrl', ['$scope', 'LogService', 'TorstatWebsocket', '$rootScope', function($scope, LogService, TorstatWebsocket, $rootScope){
 		var currentId = -1;
@@ -61,10 +56,12 @@ torstatControllers
 		MenuHandler.setCurrent("instanceDetails");
 		$scope.tor = TorInstance.get({id: $routeParams.instanceId});
 	}])
-	.controller('StreamListCtrl', ['$scope', 'MenuHandler', '$routeParams', 'Stream', function($scope, MenuHandler, $routeParams, Stream){
+	.controller('StreamListCtrl', ['$scope', 'MenuHandler', '$location', '$routeParams', 'Stream', function($scope, MenuHandler, $location, $routeParams, Stream){
 		MenuHandler.setCurrent("streamList");
 		$scope.streams = Stream.query({instanceId: $routeParams.instanceId});
-		 
+		$scope.streamDetails = function(stream){
+			$location.path(MenuHandler.getUrl('streamDetails', {instanceId: $routeParams.instanceId, streamId: stream.id}).url);
+		}
 		$scope.deleteStream = function(stream){
 			Stream.delete({id: stream.id, instanceId: $routeParams.instanceId}, function(){
 				console.log("stream closed")
@@ -72,33 +69,47 @@ torstatControllers
 		};
 
 	}])
-	.controller('CircuitListCtrl', ['$scope', 'MenuHandler', '$routeParams', 'Circuits', 'LogService',
-		function($scope,  MenuHandler, $routeParams, Circuits, logger) {
+	.controller('CircuitListCtrl', ['$scope', 'MenuHandler', '$location', '$routeParams', 'Circuits',
+		function($scope,  MenuHandler, $location, $routeParams, Circuits) {
 			MenuHandler.setCurrent("circuitList");
 			MenuHandler.setArgs({instanceId: $routeParams.instanceId});
+
 			$scope.circuits = Circuits.query({instanceId: $routeParams.instanceId});
-			
 			$scope.deleteCircuit = function(id) {
 				var promise = Circuits.delete({id: id, instanceId: $routeParams.instanceId});
 			}
-			
+			$scope.circuitDetails = function(circuit){
+				$location.path(MenuHandler.getUrl('circuitDetails', {instanceId: $routeParams.instanceId, circuitId: circuit.id}).url);
+			}
+			$scope.routerDetails = function(router){
+				$location.path(MenuHandler.getUrl('routerDetails', {instanceId: $routeParams.instanceId, routerId: router.id}).url);
+			}
+
 			$scope.update = function(){
 				$scope.circuits = Circuits.query({instanceId: $routeParams.instanceId}); 
 			}
 		}
 	])
-	.controller('CircuitDetailCtrl', ['$scope', 'MenuHandler', 'Circuits', '$routeParams',
-		function($scope, MenuHandler, $routeParams, Circuits) {
+	.controller('CircuitDetailCtrl', ['$scope', 'MenuHandler', '$location', '$routeParams', 'Circuits',
+		function($scope, MenuHandler, $location, $routeParams, Circuits) {
 			MenuHandler.setCurrent("circuitDetails");
-			$scope.circuit = Circuits.get({id: $routeParams.circuitId, instanceId: $routeParams.instanceId}, function(circuit){
-				// get circuit callback
-			});
+			MenuHandler.setArgs($routeParams);
+
+			$scope.routerDetails = function(router){
+				$location.path(MenuHandler.getUrl('routerDetails', {instanceId: $routeParams.instanceId, routerId: router.id}).url);
+			}
+
+			$scope.circuit = Circuits.get({id: $routeParams.circuitId, instanceId: $routeParams.instanceId});
 		}
 	])
 	.controller('RouterDetailCtrl', ['$scope', 'MenuHandler', '$routeParams', 'Router', 'OnionooRouter', 'ReverseDNS',
 		function($scope, MenuHandler, $routeParams, Router, OnionooRouter, ReverseDNS) {
 			MenuHandler.setCurrent("routerDetails");
-			$scope.router = Router.get({id: $routeParams.routerId, instanceId: $routeParams.instanceId}, function(router){});
+			MenuHandler.setArgs($routeParams);
+			$scope.router = Router.get({id: $routeParams.routerId, instanceId: $routeParams.instanceId}, 
+				function(router){
+					MenuHandler.updateArgs({routerName: router.name});
+				});
 			
 			$scope.reverseDNS = function(router){
 				ReverseDNS.get({ip: router.ip}, function(data){

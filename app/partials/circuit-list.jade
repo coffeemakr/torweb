@@ -3,7 +3,6 @@
   h2 {{circuits.error.statusText}}
 div(ng-if="!circuits.error")
   h1 Circuits
-  // <div id="circuitsgraph" style="height: 400px; max-width:500px"></div>
   .table-responsive
     table.table.table-striped
       thead
@@ -12,41 +11,21 @@ div(ng-if="!circuits.error")
         th Path
         th.hidden-md-down Last Node IP
         th Actions
-        //
-          th
       tbody
         tr(ng-repeat="circuit in circuits")
           td
-            a(href="#/circuit/{{circuit.id}}", title="Show the details of this ciruit.") {{circuit.id}}
+            button.btn.btn-link(ng-click="circuitDetails(circuit)", title="Show the details of this ciruit.") {{circuit.id}}
           td
             span.label.label-pill(class="label-{{circuit.state | statusStyleSuffix}}") {{circuit.state}}
           td
             .path
               .router(ng-repeat="router in circuit.path")
-                a(title="IP: {{router.ip}} (Click to see more information.)", href="#/router/{{router.id}}") {{router.name}}
-                | &nbsp;
-                span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
+                button.btn.btn-link(ng-click="routerDetails(router)", title="IP: {{router.ip}} (Click to see more information.)")
+                  | {{router.name}} &nbsp;
+                  span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
           td.hidden-md-down
             {{circuit.path[circuit.path.length-1].ip}}
           td
-            a.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit.id)", role="button")
+            button.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit.id)")
               span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
               | Close
-          //
-            td
-              .btn-group
-                button.btn.btn-secondary.dropdown-toggle(type="button", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
-                  | Action
-                .dropdown-menu
-                  a.dropdown-item(href="#") Action
-                  a.dropdown-item(href="#") Another action
-                  a.dropdown-item(href="#") Something else here
-                  .dropdown-divider
-                  a.dropdown-item(href="#") Separated link
-
-
-    //
-      {{drawGraph("circuitsgraph")}}
-      <div ng-repeat="circuit in circuits">
-      {{addToGraph(circuit)}}
-      </div>

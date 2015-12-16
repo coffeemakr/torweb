@@ -27,12 +27,12 @@ div(ng-if="!circuit.error")
           th Name
           th Fingerprint
           th IP Address
-          th 
+          th
       tbody
         tr(ng-repeat="router in circuit.path")
           td {{router.name}}
           td {{router.id}}
           td {{router.ip}}
           td
-            a.btn.btn-primary(role="button", href="#/router/{{router.id}}") Details
+            button.btn.btn-primary(ng-click="routerDetails(router)") Details
 

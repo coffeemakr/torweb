@@ -37,6 +37,15 @@ TorResource.prototype.setResource = function(resource){
 
 TorResource.prototype.query = function(args){
 	this.value = this.resource.query.apply(this.resource, arguments);
+	var thatValue = this.value;
+	this.value.$promise.then(
+		function(value){
+			console.log(value);
+		},
+		function(error){
+			thatValue["error"] = error;
+		}
+	);
 	return this.value;
 }
 
@@ -101,6 +110,88 @@ LogService.prototype.log = function(message) {
 var GlobalLogService = null;
 
 /** @constructor */
+function MenuTreeNode(config){
+	this.name = config["name"];
+	/** @type{MenuTreeNode} */
+	this.parent = config["parent"];
+	this.path = null;
+	this.id = config["id"];
+	this.isrelative = config["isrelative"];
+	this.url = config["url"];
+	this.fullUrl = null;
+}
+
+
+MenuTreeNode.prototype.getReversePath = function(){
+	if(this.path === null){
+		var node = this;
+		var path = [];
+		do{
+			path.push(node);
+			node = node.parent;
+		}while(node.parent !== null);
+		this.path = path;
+	}
+	return this.path;
+}
+
+/** 
+ * @return {string}
+ */
+function _joinUrl(pre, post){
+	if(pre[pre.length - 1] != "/" && post[post.length - 1] != "/") {
+		return pre + "/" + post;
+	}else{
+		return pre + post;
+	}
+}
+
+/**
+ * Returns the full, unformatted url.
+ * @return {string}
+ */
+MenuTreeNode.prototype.getUrl = function(){
+	if(this.fullUrl === null) {
+		if(!this.isrelative){
+			this.fullUrl = this.url;
+		}else{
+			/** @type{string} */
+			var parentUrl = "/";
+			if(this.parent !== null){
+				// recursive should be fine because nobody want a link
+				// tree a large depth
+				parentUrl = this.parent.getUrl();
+			}
+			this.fullUrl = _joinUrl(parentUrl, this.url);
+		}
+	}
+	return this.fullUrl;
+}
+
+function _formatString(format, name, value){
+	return format.replace(':' + name, value);
+}
+
+/**
+ * Returns the full, unformatted url.
+ * @return {@dict}
+ */
+MenuTreeNode.prototype.getFormattedUrlObject = function(args){
+	var url = this.getUrl();
+	var name = this.name;
+	for(var replaceName in args){
+		var replacveValue = args[replaceName]
+		name = _formatString(name, replaceName, replacveValue);
+		url = _formatString(url, replaceName, replacveValue);
+	}
+	return {
+		"name": name,
+		"url": url,
+		"id": this.id
+	}
+}
+
+/** @constructor */
 function MenuHandler(scope, config){
 	this.scope = scope;
 	this.clear();
@@ -108,10 +199,15 @@ function MenuHandler(scope, config){
 }
 
 MenuHandler.prototype.clear = function(){
+	/** @dict */
 	this.nodes = {}
+	/** @dict */
 	this.format_args = {}
+	/** @type{MenuTreeNode} */
 	this.currentNode = null;
+	/** @Array<Object> */
 	this.breadcrumbs = [];
+	/** @type{boolean} */ 
 	this.appendSlashBeforeRelative = true;
 	this.scope["breadcrumbs"] = this.breadcrumbs;
 }
@@ -127,11 +223,13 @@ MenuHandler.prototype.setNodes = function(nodes){
 			if(node.hasOwnProperty(parentName)) {
 				node[parentName] = this.nodes[node[parentName]];
 				if(typeof node[parentName] == 'undefined'){
-					console.log("invalid parent");
+					console.log("parent could not be resolved");
 					continue;
 				}
+			}else{
+				node[parentName] = null;
 			}
-			this.nodes[node["id"]] = node;
+			this.nodes[node["id"]] = new MenuTreeNode(node);
 		};
 	}
 }
@@ -149,60 +247,41 @@ MenuHandler.prototype.getBreadcrumbs = function(){
 	return this.breadcrumbs;
 }
 
-function _formatString(value, args){
-	if(!args) {
-		return value;
-	}
-	for(var replaceName in this.format_args){
-		var replaceVal = this.format_args[replaceName];
-		console.log("Replace ", replaceName , " with ", replaceVal);
-		nodeUrl = nodeUrl.replace(':' + replaceName, replaceVal);
-		nodeName = nodeName.replace(':' + replaceName, replaceVal);
-	}
-}
-
 MenuHandler.prototype.setArgs = function(args){
 	this.format_args = args;
 	this.update();
 }
 
+MenuHandler.prototype.updateArgs = function(args){
+	for(name in args){
+		this.format_args[name] = args[name];
+	}
+	this.update();
+}
+
+MenuHandler.prototype.getUrl = function(id, format_args){
+	if (typeof format_args == 'undefined'){
+		format_args = this.format_args;
+	}
+	if(!this.nodes.hasOwnProperty(id)){
+		return;
+	}
+	return this.nodes[id].getFormattedUrlObject(format_args);
+}
+
 MenuHandler.prototype.update = function(){
 	this.breadcrumbs.length = 0;
 	var node = this.currentNode;
-	var nodes = [];
+	var nodes = node.getReversePath();
 	var url = '/';
-	do{
-		nodes.push(node);
-		node = node["parent"];
-	}while(node.hasOwnProperty("parent"));
-	
-	// notes are in reversed order so we begin at the end
-	for (var i = nodes.length - 1; i >= 0; i--) {
-		node = nodes[i];
-		var nodeUrl = node["url"];
-		var nodeName = node["name"];
-		if(this.format_args){
-			console.log("Replace args: ", this.format_args);
-			for(var replaceName in this.format_args){
-				var replaceVal = this.format_args[replaceName];
-				console.log("Replace ", replaceName , " with ", replaceVal);
-				nodeUrl = nodeUrl.replace(':' + replaceName, replaceVal);
-				nodeName = nodeName.replace(':' + replaceName, replaceVal);
-			}
+	var path = node.getReversePath();
+	for (var i = path.length - 1; i >= 0; i--) {
+		var crumb = nodes[i].getFormattedUrlObject(this.format_args);
+		if(i == 0){
+			crumb["class"] = "active";
+			crumb["active"] = true;
 		}
-		if(node["isrelative"]){
-			if(this.appendSlashBeforeRelative && url[url.length - 1] != '/' && nodeUrl[0] != '/'){
-				console.log("appending / to ", url);
-				url += '/'
-			}
-			url += nodeUrl;
-		}else{
-			url = nodeUrl;
-		}
-		this.breadcrumbs.push({
-			name: nodeName,
-			url: "#" + url
-		});
+		this.breadcrumbs.push(crumb);
 	};
 }
 
@@ -211,13 +290,7 @@ torstatServices
 		function($resource, baseURL, $rootScope){
 			return function(ressourceName){
 				var res = new TorResource(
-					$resource(
-						baseURL + 'tor/:instanceId/' + ressourceName + '/:id', 
-						{},
-						{
-							query: {method:'GET', params:{id:''}, isArray:true}
-						}
-					)
+					$resource(baseURL + 'tor/:instanceId/' + ressourceName + '/:id', {}, {query: {method:'GET', params:{id:''}, isArray:true}})
 				);
 				// Register broadcast listener
 				$rootScope.$on(ressourceName, function(bc, evt){
@@ -242,31 +315,34 @@ torstatServices
 			{	'id': 'instanceDetails',
 				'parent': 'instanceList',
 				'name': "Instance :instanceId",
-				"url": "/:instanceId/"
+				"url": ":instanceId"
 			},
 			{	"id": 'streamList',
 				"parent": 'instanceDetails',
 				"name": "Streams",
-				"url": "/streams",
+				"url": "streams",
 				"isrelative": true
 			},
 			{	"id": 'circuitList',
 				"parent": 'instanceDetails',
 				"name": "Circuits",
-				"url": "/circuits",
+				"url": "circuits",
 				"isrelative": true
 			},
 			{	"id": 'streamDetails',
-				"parent": 'instanceDetails',
+				"parent": 'streamList',
 				"name": "Stream :streamId",
-				"url": "/stream/:streamId/",
-				"isrelative": true
+				"url": ":instanceId/stream/:circuitId",
 			},
 			{	"id": 'circuitDetails',
-				"parent": 'instanceDetails',
-				"name": "Circuit :streamId",
-				"url": "/Circuit/:streamId/",
-				"isrelative": true
+				"parent": 'circuitList',
+				"name": "Circuit :circuitId",
+				"url": ":instanceId/circuit/:circuitId",
+			},
+			{	"id": 'routerDetails',
+				"parent": 'circuitList',
+				"name": "Router :routerName",
+				"url": ":instanceId/router/:routerId",
 			},
 		]});
 		return mh;

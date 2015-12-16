@@ -30,19 +30,21 @@ html(lang="en", ng-app="torstatApp")
         .container
           nav.navbar.navbar-dark.bg-inverse
             a.navbar-brand(href="#/") Torweb
-            ul.nav.navbar-nav
-              li.nav-item
-                a.nav-link(href="#/{{tor.id}}/circuits")
-                  | Circuits
-                  span.sr-only
-              li.nav-item
-                a.nav-link(href="#/{{tor.id}}/streams")
-                  | Streams
-                  span.sr-only
+            // currently broken 
+              ul.nav.navbar-nav
+                li.nav-item
+                  a.nav-link(href="#/{{tor.id}}/circuits")
+                    | Circuits
+                    span.sr-only
+                li.nav-item
+                  a.nav-link(href="#/{{tor.id}}/streams")
+                    | Streams
+                    span.sr-only
         .container
           ol.breadcrumb
-            li(ng-repeat="crumb in breadcrumbs")
-              a(href="{{crumb.url}}") {{crumb.name}}
+            li(ng-repeat="crumb in breadcrumbs", class="{{crumb.class}}")
+              a(href="#{{crumb.url}}", ng-if="!crumb.active") {{crumb.name}}
+              span(ng-if="crumb.active") {{crumb.name}}
 
           //
             form.form-inline.navbar-form.pull-right
