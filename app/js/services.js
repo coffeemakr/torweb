@@ -25,7 +25,6 @@ TorResource.prototype.setResource = function(resource){
 	this.resource = resource;
 	for(var key in resource){
 		if(key != "get" && key != "query"){
-			console.log(key);
 			this[key] = function(fnc){
 				return function(args){
 					return fnc.apply(resource, arguments);
@@ -40,7 +39,7 @@ TorResource.prototype.query = function(args){
 	var thatValue = this.value;
 	this.value.$promise.then(
 		function(value){
-			console.log(value);
+
 		},
 		function(error){
 			thatValue["error"] = error;
@@ -54,7 +53,7 @@ TorResource.prototype.get = function(args){
 	var thatValue = this.value;
 	this.value.$promise.then(
 		function(value){
-			console.log(value);
+
 		},
 		function(error){
 			thatValue["error"] = error;
@@ -111,26 +110,50 @@ var GlobalLogService = null;
 
 /** @constructor */
 function MenuTreeNode(config){
-	this.name = config["name"];
-	/** @type{MenuTreeNode} */
-	this.parent = config["parent"];
+	this.parent = config.parent;
+	this.url = config.url;
+	this.name = config.name;
+	this.description = config.description;
+	if(angular.isUndefined(this.description)){
+		this.description = null;
+	}
+	this.templateUrl = config.templateUrl;
+	this.templateName = null;
+	if(angular.isUndefined(this.url)){
+		console.log("Undefined url");
+	}
+	if(angular.isUndefined(this.name)){
+		console.log("Undefined name in ", this.url);
+	}
 	this.path = null;
-	this.id = config["id"];
-	this.isrelative = config["isrelative"];
-	this.url = config["url"];
-	this.fullUrl = null;
 }
 
 
+MenuTreeNode.prototype.getTemplateName = function(){
+	if(this.templateName === null){
+		var name = this.templateUrl;
+		var index = name.lastIndexOf('/');
+		if(index >= 0){
+			name = name.substring(index + 1);
+		}
+		index = name.lastIndexOf('.');
+		if(index > 0){
+			name = name.substring(0, index);
+		}
+		this.templateName = name;
+	}
+	return this.templateName;
+}
 MenuTreeNode.prototype.getReversePath = function(){
 	if(this.path === null){
-		var node = this;
-		var path = [];
-		do{
-			path.push(node);
-			node = node.parent;
-		}while(node.parent !== null);
-		this.path = path;
+		this.path = [];
+		for(var node = this; node !== null; node = node.parent){
+			if(this.path.indexOf(node) >= 0){
+				console.error("Infinite loop!", node);
+				break;
+			}
+			this.path.push(node);
+		}
 	}
 	return this.path;
 }
@@ -146,56 +169,43 @@ function _joinUrl(pre, post){
 	}
 }
 
-/**
- * Returns the full, unformatted url.
- * @return {string}
- */
-MenuTreeNode.prototype.getUrl = function(){
-	if(this.fullUrl === null) {
-		if(!this.isrelative){
-			this.fullUrl = this.url;
-		}else{
-			/** @type{string} */
-			var parentUrl = "/";
-			if(this.parent !== null){
-				// recursive should be fine because nobody want a link
-				// tree a large depth
-				parentUrl = this.parent.getUrl();
-			}
-			this.fullUrl = _joinUrl(parentUrl, this.url);
+function _formatString(format, params){
+	if(format && params){
+		for(var replaceName in params){
+			format = format.replace(':' + replaceName, params[replaceName]);
 		}
 	}
-	return this.fullUrl;
+	return format
 }
 
-function _formatString(format, name, value){
-	return format.replace(':' + name, value);
+MenuTreeNode.prototype.getUrl = function(params){
+	return _formatString(this.url, params);
+}
+
+MenuTreeNode.prototype.getName  = function(params){
+	if(!this.name){
+		console.log("Name not defined!!", this.name, this.url);
+	}
+	return _formatString(this.name, params);
 }
 
 /**
  * Returns the full, unformatted url.
  * @return {@dict}
  */
-MenuTreeNode.prototype.getFormattedUrlObject = function(args){
-	var url = this.getUrl();
-	var name = this.name;
-	for(var replaceName in args){
-		var replacveValue = args[replaceName]
-		name = _formatString(name, replaceName, replacveValue);
-		url = _formatString(url, replaceName, replacveValue);
-	}
+MenuTreeNode.prototype.getLink = function(params){
 	return {
-		"name": name,
-		"url": url,
-		"id": this.id
+		"name": this.getName(params),
+		"url": this.getUrl(params),
+		"description": this.description
 	}
 }
 
 /** @constructor */
-function MenuHandler(scope, config){
+function MenuHandler(scope, route){
 	this.scope = scope;
 	this.clear();
-	this.setNodes(config["nodes"])
+	this.setRoute(route);
 }
 
 MenuHandler.prototype.clear = function(){
@@ -212,24 +222,48 @@ MenuHandler.prototype.clear = function(){
 	this.scope["breadcrumbs"] = this.breadcrumbs;
 }
 
-
-MenuHandler.prototype.setNodes = function(nodes){
-	if(typeof nodes == 'undefined' || typeof nodes.length == 'undefined'){
+function _getUrlParent(url){
+	var index = url.lastIndexOf('/');
+	if(index == 0 && url == '/'){
+		return null;
+	}else if(index <= 0){
+		return '/';
+	}else{
+		return url.substring(0, index);
+	}
+}
+MenuHandler.prototype.setRoute = function(route){
+	if(angular.isUndefined(route)){
 		this.nodes = {};
 	}else{
-		for (var i = 0; i < nodes.length; i++) {
-			var node = nodes[i];
-			var parentName = "parent";
-			if(node.hasOwnProperty(parentName)) {
-				node[parentName] = this.nodes[node[parentName]];
-				if(typeof node[parentName] == 'undefined'){
-					console.log("parent could not be resolved");
-					continue;
-				}
-			}else{
-				node[parentName] = null;
+		console.log("Routes: ", route.routes)
+		for (var url in route.routes) {
+			if(url === null){
+				continue;
 			}
-			this.nodes[node["id"]] = new MenuTreeNode(node);
+			var name = route.routes[url].name;
+			if(!name){
+				continue;
+			}
+			var config = {};
+			config.parent = null;
+			config.url = url;
+			config.name = name;
+			config.templateUrl = route.routes[url].templateUrl;
+			this.nodes[url] = new MenuTreeNode(config);
+		};
+		// resolve parent
+		for(var url in this.nodes){
+			if (this.nodes[url].parent === null){
+				var parentUrl = _getUrlParent(this.nodes[url].url);
+				while(parentUrl !== null && !route.routes.hasOwnProperty(parentUrl)){
+					console.log("Unresolved parent url:", parentUrl)
+					parentUrl = _getUrlParent(parentUrl);
+				}
+				if(parentUrl !== null){
+					this.nodes[url].parent = this.nodes[parentUrl];
+				}
+			}
 		};
 	}
 }
@@ -241,6 +275,10 @@ MenuHandler.prototype.setCurrent = function(id){
 		this.currentNode = this.nodes[id];
 		this.update();
 	}
+}
+
+MenuHandler.prototype.getCurrent = function(){
+	return this.currentNode;
 }
 
 MenuHandler.prototype.setArgs = function(args){
@@ -255,24 +293,22 @@ MenuHandler.prototype.updateArgs = function(args){
 	this.update();
 }
 
-MenuHandler.prototype.getUrl = function(id, format_args){
-	if (typeof format_args == 'undefined'){
-		format_args = this.format_args;
-	}
-	if(!this.nodes.hasOwnProperty(id)){
-		return;
-	}
-	return this.nodes[id].getFormattedUrlObject(format_args);
+MenuHandler.prototype.getUrlForTemplateName = function(name, format_args){
+	for (var url in this.nodes) {
+		if(this.nodes[url].getTemplateName() == name){
+			return this.nodes[url].getUrl(format_args);
+		}
+	};
+	return null;
 }
 
 MenuHandler.prototype.update = function(){
 	this.breadcrumbs.length = 0;
 	var node = this.currentNode;
-	var nodes = node.getReversePath();
 	var url = '/';
 	var path = node.getReversePath();
 	for (var i = path.length - 1; i >= 0; i--) {
-		var crumb = nodes[i].getFormattedUrlObject(this.format_args);
+		var crumb = path[i].getLink(this.format_args);
 		if(i == 0){
 			crumb["class"] = "active";
 			crumb["active"] = true;
@@ -284,85 +320,44 @@ MenuHandler.prototype.update = function(){
 torstatServices
 	.factory('$TorResource', ['$resource', 'baseURL', '$rootScope',
 		function($resource, baseURL, $rootScope){
+			/** @dict */
+			var resources = {};
 			return function(ressourceName){
-				var idName = ressourceName + 'Id';
+				if(resources.hasOwnProperty(ressourceName)){
+					return resources[ressourceName];
+				}
+				/** @type{string} */
+				var url = baseURL + 'tor/:instanceId/', idName;
+				/** @dict */
 				var queryParams = {};
+				if(url !== null){
+					idName = ressourceName + 'Id';
+					url += ressourceName + '/:' + idName;
+				}else{
+					idName = 'instanceId';
+				}
 				queryParams[idName] = ''; 
-				var res = new TorResource(
-					$resource(baseURL + 'tor/:instanceId/' + ressourceName + '/:' + idName, {}, {query: {method:'GET', params:queryParams, isArray:true}})
-				);
+				var res = new TorResource($resource(url, {}, {query: {method:'GET', params: queryParams, isArray:true}}));
 				// Register broadcast listener
 				$rootScope.$on(ressourceName, function(bc, evt){
 					res.update(evt[ressourceName])
 				});
+				resources[ressourceName] = res;
 				return res;
 			};
 		}]
 	)
-	.factory('MenuHandler', ['$rootScope', function($rootScope){
-		var mh = new MenuHandler($rootScope, {
-			"nodes": [
-			{	'id': 'root',
-				'name': "Torweb",
-				"url": "/"
-			},
-			{	'id': 'instanceList',
-				'parent': 'root',
-				'name': "Instances",
-				"url": "/"
-			},
-			{	'id': 'instanceDetails',
-				'parent': 'instanceList',
-				'name': "Instance :instanceId",
-				"url": ":instanceId"
-			},
-			{	"id": 'streamList',
-				"parent": 'instanceDetails',
-				"name": "Streams",
-				"url": "stream",
-				"isrelative": true
-			},
-			{	"id": 'circuitList',
-				"parent": 'instanceDetails',
-				"name": "Circuits",
-				"url": "circuit",
-				"isrelative": true
-			},
-			{	"id": 'streamDetails',
-				"parent": 'streamList',
-				"name": "Stream :streamId",
-				"url": ":instanceId/stream/:circuitId",
-			},
-			{	"id": 'circuitDetails',
-				"parent": 'circuitList',
-				"name": "Circuit :circuitId",
-				"url": ":instanceId/circuit/:circuitId",
-			},
-			{	"id": 'routerDetails',
-				"parent": 'circuitList',
-				"name": "Router :routerName",
-				"url": ":instanceId/router/:routerId",
-			},
-		]});
-		return mh;
-	}])
-	.factory('Circuits', ['$TorResource', function($TorResource) {
-		return $TorResource('circuit');
+	.factory('MenuHandler', ['$rootScope', '$route', '$routeParams', function($rootScope, $route, $routeParams){
+		return new MenuHandler($rootScope, $route, $routeParams);
 	}])
 	.factory('TorInstance', ['$resource', 'baseURL', function($resource, baseURL) {
 		return $resource(baseURL + 'tor/:instanceId', {}, {query: {method:'GET', params:{instanceId:''}, isArray:true}})
 	}])
-	.factory('Stream', ['$TorResource', function($TorResource) {
-	    return $TorResource('stream');
-	}])
 	.factory('OnionooRouter', ['$resource', 'onionooURL', function($resource, onionooURL){
-		return $resource(onionooURL + "details?lookup=:routerId", {}, {});
-	}])
-	.factory('Router', ['$TorResource', function($TorResource){
-		return $TorResource('router');
+		return $resource(onionooURL + "details?lookup=:routerId");
 	}])
 	.factory('ReverseDNS', ['$resource', 'baseURL', function($resource, baseURL) {
-	    return $resource(baseURL + 'dns/reverse/:ip', {}, {});
+	    return $resource(baseURL + 'dns/reverse/:ip');
 	}])
 	.factory('LogService', function(){
 		if(GlobalLogService === null){
@@ -371,8 +366,70 @@ torstatServices
 		console.log("logger", GlobalLogService);
 		return GlobalLogService;
 	})
-	.factory('TorstatWebsocket', ['$websocket', 'baseURL', function($websocket, baseURL) {
-		return function(instanceId){
-			return $websocket('ws://' + baseURL + "tor/" + instanceId + "/websocket/");
+	.factory('TorstatWebsocket', ['$websocket', '$TorResource', 'baseURL', function($websocket, $TorResource, baseURL) {
+		var currentRessource = null;
+		return {
+			websocket: null,
+			currentId: undefined,
+			scope: null,
+			resourceArraySuffix: "s",
+			connect: function(instanceId){
+				if(instanceId != this.currentId){
+					if(this.websocket !== null){
+						console.log("closing websocket");
+						this.websocket.close();
+						this.websocket = null;
+					}
+					this.websocket = $websocket('ws://' + baseURL + "tor/" + instanceId + "/websocket/");
+					this.websocket.onMessage(this.getOnMessageFunction());
+					console.log("this", this);
+					this.currentId = instanceId;					
+				}
+				return this;
+			},
+			getOnMessageFunction: function(){
+				var that = this;
+				return function(message){
+					if(!angular.isUndefined(message.data)){
+						var update = JSON.parse(message.data);
+						if(update && update.type && update.data && update.data[update.type] && update.data[update.type].id){
+							that.updateObject(update.type, update.data[update.type], "id");
+						}
+					}
+				}
+			},
+			updateObject: function(resourceName, data, key){
+				if(this.scope !== null){
+					var objectToUpdate = null;
+					if(this.scope.hasOwnProperty(resourceName)){
+						objectToUpdate = this.scope[resourceName];
+					}else if(this.scope.hasOwnProperty(resourceName + this.resourceArraySuffix)){
+						var list = this.scope[resourceName + this.resourceArraySuffix];
+						for (var i = 0; i < list.length; i++) {
+							if(list[i].id == data.id){
+								objectToUpdate = list[i];
+								break;
+							}
+						};
+						if(objectToUpdate === null){
+							list.push(data);
+						}
+					}
+					if(objectToUpdate !== null){
+						updateObject(data, objectToUpdate);
+					}
+				}
+			},
+			close: function(){
+				if(this.websocket !== null){
+					this.websocket.close();
+					this.websocket = null;
+				}
+				return this;
+			},
+			setScope: function(scope){
+				this.scope = scope;
+				return this;
+			}
 		}
 	}]);

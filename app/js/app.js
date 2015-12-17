@@ -16,27 +16,34 @@ torstatApp
 			$routeProvider
 				.when('/', {
 					templateUrl: 'partials/instance-list.html',
-					controller: 'InstanceCtrl'
+					controller: 'InstanceCtrl',
+					name: 'Torweb'
 				})
 				.when('/:instanceId', {
+					redirectTo: '/:instanceId/circuit',
 					templateUrl: 'partials/instance-detail.html',
-					controller: 'InstanceCtrl'
+					controller: 'InstanceCtrl',
+					name: 'Instance :instanceId'
 				})
 				.when('/:instanceId/router/:routerId', {
 					templateUrl: 'partials/router-detail.html',
-					controller: 'RouterCtrl'
+					controller: 'TorRessourceCtrl',
+					name: 'Router :routerName'
 				})
 				.when('/:instanceId/stream', {
 					templateUrl: 'partials/stream-list.html',
-					controller: 'StreamCtrl'
+					controller: 'TorRessourceCtrl',
+					name: 'Streams'
 				})
 				.when('/:instanceId/circuit', {
 					templateUrl: 'partials/circuit-list.html',
-					controller: 'CircuitCtrl'
+					controller: 'TorRessourceCtrl',
+					name: 'Circuits'
 				})
 				.when('/:instanceId/circuit/:circuitId', {
 					templateUrl: 'partials/circuit-detail.html',
-					controller: 'CircuitCtrl'
+					controller: 'TorRessourceCtrl',
+					name: 'Circuit :circuitId'
 				})
 				.otherwise({
 					redirectTo: '/'
