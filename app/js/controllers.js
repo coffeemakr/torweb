@@ -56,7 +56,7 @@ torstatControllers
 				$location.path(MenuHandler.getUrlForTemplateName('router-detail', {instanceId: $routeParams.instanceId, routerId: router.id}));
 			};
 			$scope.streamDetails = function(stream){
-				$location.path(MenuHandler.getUrl('stream-detail', {instanceId: $routeParams.instanceId, streamId: stream.id}).url);
+				$location.path(MenuHandler.getUrlForTemplateName('stream-detail', {instanceId: $routeParams.instanceId, streamId: stream.id}).url);
 			};
 			$scope.deleteStream = function(stream){
 				$TorResource('stream').delete({streamId: stream.id, instanceId: $routeParams.instanceId});

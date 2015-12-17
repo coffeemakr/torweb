@@ -10,57 +10,7 @@ torstatServices
 	})
 	.factory('onionooURL', function(){
 		return "https://onionoo.torproject.org/";
-	})
-;
-
-/** @constructor */
-function TorResource(resource){
-	this.value = {};
-	this.valueIsArray = false;
-	this.setResource(resource);
-	this.idAttribute = "id";
-}
-
-TorResource.prototype.setResource = function(resource){
-	this.resource = resource;
-	for(var key in resource){
-		if(key != "get" && key != "query"){
-			this[key] = function(fnc){
-				return function(args){
-					return fnc.apply(resource, arguments);
-				};
-			}(resource[key]);
-		}
-	}
-}
-
-TorResource.prototype.query = function(args){
-	this.value = this.resource.query.apply(this.resource, arguments);
-	var thatValue = this.value;
-	this.value.$promise.then(
-		function(value){
-
-		},
-		function(error){
-			thatValue["error"] = error;
-		}
-	);
-	return this.value;
-}
-
-TorResource.prototype.get = function(args){
-	this.value = this.resource.get.apply(this.resource, arguments);
-	var thatValue = this.value;
-	this.value.$promise.then(
-		function(value){
-
-		},
-		function(error){
-			thatValue["error"] = error;
-		}
-	);
-	return this.value;
-}
+	});
 
 function updateObject(src, dst){
 	for (var key in src) {
@@ -69,29 +19,6 @@ function updateObject(src, dst){
 		}
 	}
 }
-
-TorResource.prototype.update = function(src){
-	var dest = null;
-	if(typeof this.value.length != 'undefined'){
-		for (var i = this.value.length - 1; i >= 0; i--) {
-			if(this.value[i][this.idAttribute] == src[this.idAttribute]) {
-				dest = this.value[i];
-			}
-		};
-		if(dest === null){
-			dest = {}
-			this.value.push(dest);
-		}
-	}else{
-		if(src[this.idAttribute] == this.value[this.idAttribute]){
-			dest = this.value;
-		}
-	}
-	if(dest !== null){
-		updateObject(src, dest);
-	}
-}
-
 
 /** @constructor */
 function LogService(){
@@ -318,35 +245,93 @@ MenuHandler.prototype.update = function(){
 }
 
 torstatServices
-	.factory('$TorResource', ['$resource', 'baseURL', '$rootScope',
-		function($resource, baseURL, $rootScope){
+	.factory('$TorResource', ['$resource', 'baseURL',
+		function($resource, baseURL){
 			/** @dict */
 			var resources = {};
-			return function(ressourceName){
-				if(resources.hasOwnProperty(ressourceName)){
-					return resources[ressourceName];
-				}
+			function createRessource(name){
 				/** @type{string} */
 				var url = baseURL + 'tor/:instanceId/', idName;
 				/** @dict */
 				var queryParams = {};
 				if(url !== null){
-					idName = ressourceName + 'Id';
-					url += ressourceName + '/:' + idName;
+					idName = name + 'Id';
+					url += name + '/:' + idName;
 				}else{
 					idName = 'instanceId';
 				}
 				queryParams[idName] = ''; 
-				var res = new TorResource($resource(url, {}, {query: {method:'GET', params: queryParams, isArray:true}}));
-				// Register broadcast listener
-				$rootScope.$on(ressourceName, function(bc, evt){
-					res.update(evt[ressourceName])
-				});
-				resources[ressourceName] = res;
-				return res;
+				var res = $resource(url, {}, {query: {method:'GET', params: queryParams, isArray:true}});
+				return {
+					keyAttribute: "id", 
+					content: null,
+					ressource: res,
+					delete: res.delete,
+					/** @dict */
+					contentById: null,
+					contentIsArray: false,
+
+					addObject: function(content){
+						if(this.contentIsArray && this.content !== null){
+							this.content.push(content);
+							this.contentById[content.id] = content;
+						}
+					},
+
+					setContent: function(content){
+						var that = this;
+						this.contentById = {};
+						this.content = content;
+						this.$promise = content.$promise;
+						this.$promise.catch(function(error){
+							console.error(error);
+							that.content["error"] = error;
+						});
+					},
+					query: function(params){
+						var that = this;
+						this.contentIsArray = true;
+						this.setContent(this.ressource.query(params));
+						this.$promise.then(function(data){
+							that.contentById = {};
+							for (var i = data.length - 1; i >= 0; i--) {
+								that.contentById[data[i].id] = data[i];
+							};
+						});
+						return this.content;
+					},
+					get: function(params){
+						var that = this;
+						this.setContent(this.ressource.get(params));
+						this.$promise.then(function(data){
+							that.contentById = {}
+							that.contentById[data.id] = data;
+						});
+						return this.content;
+					},
+					update: function(content){
+						var objectToUpdate = null;
+						if(this.content !== null){
+							if(this.contentById.hasOwnProperty(content.id)){
+								updateObject(content, this.contentById[content.id]);
+							}else if(this.contentIsArray){
+								this.addObject(content);
+							}
+						}
+					}
+				}; // return
+
 			};
-		}]
-	)
+
+			function getRessourceByName(name){
+				if(!resources.hasOwnProperty(name)){
+					console.log("creating ", name);
+					resources[name] = createRessource(name);
+				}
+				return resources[name];
+			};
+			return getRessourceByName;
+	}])
 	.factory('MenuHandler', ['$rootScope', '$route', '$routeParams', function($rootScope, $route, $routeParams){
 		return new MenuHandler($rootScope, $route, $routeParams);
 	}])
@@ -366,7 +351,7 @@ torstatServices
 		console.log("logger", GlobalLogService);
 		return GlobalLogService;
 	})
-	.factory('TorstatWebsocket', ['$websocket', '$TorResource', 'baseURL', function($websocket, $TorResource, baseURL) {
+	.factory('TorstatWebsocket', ['$websocket', 'baseURL', '$TorResource', function($websocket, baseURL, $TorResource) {
 		var currentRessource = null;
 		return {
 			websocket: null,
@@ -382,8 +367,7 @@ torstatServices
 					}
 					this.websocket = $websocket('ws://' + baseURL + "tor/" + instanceId + "/websocket/");
 					this.websocket.onMessage(this.getOnMessageFunction());
-					console.log("this", this);
-					this.currentId = instanceId;					
+					this.currentId = instanceId;
 				}
 				return this;
 			},
@@ -393,32 +377,14 @@ torstatServices
 					if(!angular.isUndefined(message.data)){
 						var update = JSON.parse(message.data);
 						if(update && update.type && update.data && update.data[update.type] && update.data[update.type].id){
-							that.updateObject(update.type, update.data[update.type], "id");
+							that.updateObject(update.type, update.data[update.type]);
 						}
 					}
 				}
 			},
-			updateObject: function(resourceName, data, key){
-				if(this.scope !== null){
-					var objectToUpdate = null;
-					if(this.scope.hasOwnProperty(resourceName)){
-						objectToUpdate = this.scope[resourceName];
-					}else if(this.scope.hasOwnProperty(resourceName + this.resourceArraySuffix)){
-						var list = this.scope[resourceName + this.resourceArraySuffix];
-						for (var i = 0; i < list.length; i++) {
-							if(list[i].id == data.id){
-								objectToUpdate = list[i];
-								break;
-							}
-						};
-						if(objectToUpdate === null){
-							list.push(data);
-						}
-					}
-					if(objectToUpdate !== null){
-						updateObject(data, objectToUpdate);
-					}
-				}
+			updateObject: function(resourceName, data){
+				var res = $TorResource(resourceName);
+				res.update(data);
 			},
 			close: function(){
 				if(this.websocket !== null){
