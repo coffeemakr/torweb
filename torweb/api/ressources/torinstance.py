@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 # NOTE: We use a slightly customized version of the TorControlProtocol
-from torweb.api.util.torprotocol import TorProtocolFactory
+#from torweb.api.util.torprotocol import TorProtocolFactory
 from torweb.api.json import JsonObject
 from torweb.api.util import response
 
@@ -11,6 +11,7 @@ from twisted.internet import reactor
 from torweb.api.ressources import CircuitRoot, RouterRoot, StreamRoot
 from torweb.api import websocket
 import txtorcon
+from txtorcon import TorProtocolFactory
 
 __all__ = ('TorInstances', 'TorInstance')
 
