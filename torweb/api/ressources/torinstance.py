@@ -1,8 +1,7 @@
-from __future__ import absolute_import
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, with_statement
 
-# NOTE: We use a slightly customized version of the TorControlProtocol
-#from torweb.api.util.torprotocol import TorProtocolFactory
-from torweb.api.json import JsonObject
+from torweb.api.json import JsonTorInstanceMinimal, JsonTorInstance
 from torweb.api.util import response
 
 from twisted.web import resource
@@ -10,12 +9,13 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
 from torweb.api.ressources import CircuitRoot, RouterRoot, StreamRoot
 from torweb.api import websocket
+from autobahn.twisted.resource import WebSocketResource
 import txtorcon
 from txtorcon import TorProtocolFactory
 
 __all__ = ('TorInstances', 'TorInstance')
 
-class TorInstance(resource.Resource, JsonObject):
+class TorInstance(resource.Resource):
     '''
     A resource for a single tor instance.
     '''
@@ -23,14 +23,11 @@ class TorInstance(resource.Resource, JsonObject):
     #: State tracker
     sate = None
 
-    attributes = ('id', 'is_connected', 'host', 'port')
-
     port = None
     host = None
 
     def __init__(self, endpoint):
         resource.Resource.__init__(self)
-        JsonObject.__init__(self, self)
 
         d = endpoint.connect(TorProtocolFactory(password_function=self.password_callback))
         d.addCallback(self._build_state)
@@ -45,19 +42,28 @@ class TorInstance(resource.Resource, JsonObject):
         self.putChild('stream', self.streamRoot)
 
         self.websocket_factory = websocket.TorWebSocketServerFactory()
-        self.websocket = websocket.WebSocketResource(self.websocket_factory)
+        self.websocket = WebSocketResource(self.websocket_factory)
         self.putChild('websocket', self.websocket)
+        self._configuration = None
 
     def _connection_failed(self, *args):
-        print "Connection failed! " + str(args)
+        print("Connection failed: %s" % args)
         # pass to the next errorback
         return args
 
+    def _connection_bootstrapped(self, *args):
+        print("Connection suceeded %s " % args)
+        d = txtorcon.TorConfig.from_connection(self.protocol)
+        d.addCallback(self._configuration_callback)
+        return args
+
+    def _configuration_callback(self, config):
+        self._configuration = config
 
     def _build_state(self, proto):
         self.protocol = proto
         proto.post_bootstrap.addErrback(self._connection_failed)
-
+        proto.post_bootstrap.addCallback(self._connection_bootstrapped)
         self.state = txtorcon.TorState(proto)
         self.circuitRoot.set_torstate(self.state)
         self.routerRoot.set_torstate(self.state)
@@ -67,11 +73,10 @@ class TorInstance(resource.Resource, JsonObject):
 
     @response.json
     def render_GET(self, request):
-        print self.as_dict()
-        return self.as_dict()
+        return JsonTorInstance(self).as_dict()
 
     def password_callback(self):
-        print ('returned password')
+        print('returned password')
         return "secret"
 
     @property
@@ -90,7 +95,13 @@ class TorInstance(resource.Resource, JsonObject):
         obj.port = port
         obj.host = 'localhost'
         return obj
-
+    
+    @property
+    def configuration(self):
+        if self._configuration is not None:
+            return list(self._configuration.config_args())
+        return []
+    
 
     @classmethod
     def from_configuration(cls, config):
@@ -149,5 +160,5 @@ class TorInstanceList(resource.Resource):
     def render_GET(self, request):
         result = []
         for instance in self.instances.values():
-            result.append(instance.as_dict())
+            result.append(JsonTorInstanceMinimal(instance).as_dict())
         return result

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, with_statement
+
 from twisted.web import resource
 from torweb.api.util import response
 from torweb.api.json import JsonCircuit
@@ -10,7 +13,6 @@ class CircuitRoot(TorResource):
 		if not path:
 			return CircuitList(self.torstate)
 		try:
-			print path
 			return Circuit(self.torstate.circuits[int(path)])
 		except KeyError, ValueError:
 			return resource.NoResource("No such circuit.")

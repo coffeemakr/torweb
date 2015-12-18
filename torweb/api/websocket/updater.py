@@ -1,17 +1,15 @@
-from __future__ import print_function
-#from twisted.web.websocket import WebSocketHandler
-from autobahn.twisted.forwarder import DestEndpointForwardingProtocol
-from autobahn.twisted.resource import WebSocketResource
-import autobahn.twisted.websocket
-from autobahn.twisted.websocket import WebSocketServerProtocol
-from autobahn.twisted.websocket import WebSocketServerFactory
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, with_statement
+
 import json
 import txtorcon
 from zope.interface import implements
+from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
+
 from torweb.api.json import JsonCircuit, JsonStream
-class WebsocketMessage(object):
-    def json(self):
-        return json.dumps(self.obj, ensure_ascii=False).encode('utf8')
+
+
+__all__ = ('TorWebSocketServerFactory',)
 
 EVENT_TYPE_CIRCUIT = "circuit"
 EVENT_TYPE_STREAM = "stream"

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, with_statement
+
 from twisted.web import server, resource, http, static, util
 from twisted.internet import reactor
 from torweb.api.ressources import DNSRoot, TorInstances
