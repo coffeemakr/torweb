@@ -1,0 +1,15 @@
+h1 Tor Instance
+h2 Connection
+p Port {{instance.port}}
+p Host {{instance.host}}
+input(type="checkbox", ng-model="hide_default", ng-init="checked=true")
+h2 Configuration
+table.table.table-striped.configuration
+	thead
+		tr
+			th Name
+			th Value
+	tbody
+		tr(ng-repeat="config in instance.configuration", ng-if="!hide_default || config.value != 'DEFAULT'")
+			td {{config.name}}
+			td {{config.value}}

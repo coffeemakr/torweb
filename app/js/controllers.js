@@ -18,7 +18,7 @@ torstatControllers
 						$scope.instances = ressource.query($routeParams);
 						break;
 					case 'instance-detail':
-						$scope.instances = ressource.get($routeParams);
+						$scope.instance = ressource.get($routeParams);
 						break;
 					case 'circuit-detail':
 						$scope.circuit = ressource.get($routeParams);

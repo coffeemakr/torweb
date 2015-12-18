@@ -36,7 +36,6 @@ class TorInstance(resource.Resource):
         self.circuitRoot = CircuitRoot()
         self.routerRoot = RouterRoot()
         self.streamRoot = StreamRoot()
-
         self.putChild('circuit', self.circuitRoot)
         self.putChild('router', self.routerRoot)
         self.putChild('stream', self.streamRoot)
@@ -45,6 +44,10 @@ class TorInstance(resource.Resource):
         self.websocket = WebSocketResource(self.websocket_factory)
         self.putChild('websocket', self.websocket)
         self._configuration = None
+
+    def getChild(self, child,  request):
+        if not child:
+            return self
 
     def _connection_failed(self, *args):
         print("Connection failed: %s" % args)
@@ -98,10 +101,12 @@ class TorInstance(resource.Resource):
     
     @property
     def configuration(self):
+        config = []
         if self._configuration is not None:
-            return list(self._configuration.config_args())
-        return []
-    
+            for name, value in self._configuration.config_args():
+                config.append({"name": name, "value": value})
+        return config
+                
 
     @classmethod
     def from_configuration(cls, config):
@@ -134,7 +139,7 @@ class TorInstances(resource.Resource):
         render_GET = self.list.render_GET
 
     def getChild(self, torInstance, request):
-        if torInstance == '':
+        if not torInstance:
             return self.list
         child = None
         try:
@@ -146,6 +151,9 @@ class TorInstances(resource.Resource):
         if child is None:
             child = resource.NoResource("Instances does not exist")
         return child
+
+    def render_GET(self, request):
+        return this.list;
 
 
 

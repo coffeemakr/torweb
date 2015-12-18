@@ -20,9 +20,9 @@ torstatApp
 					name: 'Torweb'
 				})
 				.when('/:instanceId', {
-					redirectTo: '/:instanceId/circuit',
-					//templateUrl: 'partials/instance-detail.html',
-					//controller: 'TorRessourceCtrl',
+					//redirectTo: '/:instanceId/circuit',
+					templateUrl: 'partials/instance-detail.html',
+					controller: 'TorRessourceCtrl',
 					name: 'Instance :instanceId'
 				})
 				.when('/:instanceId/router/:routerId', {
