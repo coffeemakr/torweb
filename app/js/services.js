@@ -292,6 +292,11 @@ torstatServices
 						this.$promise = content.$promise;
 						this.$promise.catch(function(error){
 							console.error(error);
+							if(error.status == -1){
+								if(error.statusText.length == 0){
+									error.statusText = "Unable to connect to the server.";
+								}
+							}
 							that.content["error"] = error;
 						});
 					},
