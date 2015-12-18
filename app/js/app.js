@@ -16,13 +16,13 @@ torstatApp
 			$routeProvider
 				.when('/', {
 					templateUrl: 'partials/instance-list.html',
-					controller: 'InstanceCtrl',
+					controller: 'TorRessourceCtrl',
 					name: 'Torweb'
 				})
 				.when('/:instanceId', {
 					redirectTo: '/:instanceId/circuit',
-					templateUrl: 'partials/instance-detail.html',
-					controller: 'InstanceCtrl',
+					//templateUrl: 'partials/instance-detail.html',
+					//controller: 'TorRessourceCtrl',
 					name: 'Instance :instanceId'
 				})
 				.when('/:instanceId/router/:routerId', {

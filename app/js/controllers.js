@@ -4,17 +4,9 @@
 var torstatControllers = angular.module('torstatControllers',[]);
 
 torstatControllers
-	.controller('InstanceCtrl', ['$scope', 'MenuHandler', '$route', '$routeParams', 'TorInstance', function($scope, MenuHandler, $route, $routeParams, TorInstance){
-		MenuHandler.setCurrent($route.current.$$route.originalPath);
-		MenuHandler.setArgs($routeParams);		
-		if($routeParams.instanceId) {
-			$scope.instance = TorInstance.get($routeParams);
-		}else{
-			$scope.instances = TorInstance.query({},function(data){console.log(data)});
-		}
-	}])
-	.controller('TorRessourceCtrl', ['TorstatWebsocket', '$scope', 'MenuHandler', '$location', '$routeParams', '$TorResource', '$route', 'OnionooRouter', 'ReverseDNS',
-		function(TorstatWebsocket, $scope, MenuHandler, $location, $routeParams, $TorResource, $route, OnionooRouter, ReverseDNS) {
+	.controller('TorRessourceCtrl', 
+	   			['TorstatWebsocket', '$scope', 'MenuHandler', '$location', '$routeParams', '$TorResource', '$route', 'OnionooRouter', 'ReverseDNS',
+		function(TorstatWebsocket,    $scope,   MenuHandler,   $location,   $routeParams,   $TorResource,   $route,   OnionooRouter,   ReverseDNS) {
 			MenuHandler.setCurrent($route.current.$$route.originalPath);
 			MenuHandler.setArgs($routeParams);
 			
@@ -22,6 +14,12 @@ torstatControllers
 				var view = MenuHandler.getCurrent().getTemplateName();
 				var ressource = $TorResource(view.split('-')[0]);
 				switch(view){
+					case 'instance-list':
+						$scope.instances = ressource.query($routeParams);
+						break;
+					case 'instance-detail':
+						$scope.instances = ressource.get($routeParams);
+						break;
 					case 'circuit-detail':
 						$scope.circuit = ressource.get($routeParams);
 						break;

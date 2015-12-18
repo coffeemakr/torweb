@@ -5,9 +5,9 @@
 var torstatServices = angular.module('torstatServices', ['ngResource', 'ngWebSocket']);
 
 torstatServices
-	.factory('baseURL', function() {
+	.factory('baseURL', ['$location', function($location) {
   		return "//" + window.location.host + "/api/";
-	})
+	}])
 	.factory('onionooURL', function(){
 		return "https://onionoo.torproject.org/";
 	});
@@ -58,16 +58,20 @@ function MenuTreeNode(config){
 
 MenuTreeNode.prototype.getTemplateName = function(){
 	if(this.templateName === null){
-		var name = this.templateUrl;
-		var index = name.lastIndexOf('/');
-		if(index >= 0){
-			name = name.substring(index + 1);
+		if(this.templateUrl){
+			var name = this.templateUrl;
+			var index = name.lastIndexOf('/');
+			if(index >= 0){
+				name = name.substring(index + 1);
+			}
+			index = name.lastIndexOf('.');
+			if(index > 0){
+				name = name.substring(0, index);
+			}
+			this.templateName = name;
+		}else{
+			return null;
 		}
-		index = name.lastIndexOf('.');
-		if(index > 0){
-			name = name.substring(0, index);
-		}
-		this.templateName = name;
 	}
 	return this.templateName;
 }
@@ -250,15 +254,18 @@ torstatServices
 			/** @dict */
 			var resources = {};
 			function createRessource(name){
+				if(!name){
+					return null;
+				}
 				/** @type{string} */
 				var url = baseURL + 'tor/:instanceId/', idName;
 				/** @dict */
 				var queryParams = {};
-				if(url !== null){
+				if(name == "instance"){
+					idName = 'instanceId';
+				}else{
 					idName = name + 'Id';
 					url += name + '/:' + idName;
-				}else{
-					idName = 'instanceId';
 				}
 				queryParams[idName] = ''; 
 				var res = $resource(url, {}, {query: {method:'GET', params: queryParams, isArray:true}});
@@ -365,8 +372,10 @@ torstatServices
 						this.websocket.close();
 						this.websocket = null;
 					}
-					this.websocket = $websocket('ws://' + baseURL + "tor/" + instanceId + "/websocket/");
-					this.websocket.onMessage(this.getOnMessageFunction());
+					if(!angular.isUndefined(instanceId)){
+						this.websocket = $websocket('ws://' + baseURL + "tor/" + instanceId + "/websocket/");
+						this.websocket.onMessage(this.getOnMessageFunction());
+					}
 					this.currentId = instanceId;
 				}
 				return this;
