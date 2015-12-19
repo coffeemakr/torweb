@@ -365,7 +365,7 @@ torstatServices
 	})
 	.factory('TorstatWebsocket', ['$websocket', 'baseURL', '$TorResource', function($websocket, baseURL, $TorResource) {
 		var currentRessource = null;
-		return {
+		var ws = {
 			websocket: null,
 			currentId: undefined,
 			scope: null,
@@ -411,5 +411,10 @@ torstatServices
 				this.scope = scope;
 				return this;
 			}
-		}
+		};
+
+		$(window).on('beforeunload', function(){
+			ws.close();	
+		});
+		return ws;
 	}]);
