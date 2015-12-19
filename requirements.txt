@@ -1,5 +1,3 @@
 twisted
-txtorcon
 autobahn[twisted]
-selenium
-OpenSSL
+txtorcon
