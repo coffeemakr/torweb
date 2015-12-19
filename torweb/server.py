@@ -51,9 +51,9 @@ def main():
             certData += certFile.read()
 
         certificate = ssl.PrivateCertificate.loadPEM(certData)
-        reactor.listenSSL(8083, s, certificate.options())
+        reactor.listenSSL(8083, s, certificate.options(), interface='127.0.0.1')
     else:
-        reactor.listenTCP(8082, s)
+        reactor.listenTCP(8082, s, interface='127.0.0.1')
     reactor.run()
 
 if __name__ == "__main__":
