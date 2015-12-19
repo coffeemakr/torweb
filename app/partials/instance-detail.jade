@@ -1,8 +1,13 @@
 h1 Tor Instance
+button.btn.btn-primary(ng-click="go('circuit-list')") Circuits
+button.btn.btn-primary(ng-click="go('stream-list')") Streams
+
 h2 Connection
 p Port {{instance.port}}
 p Host {{instance.host}}
-input(type="checkbox", ng-model="hide_default", ng-init="checked=true")
+label
+	| Hide default values
+	input(type="checkbox", ng-model="hide_default", ng-init="hide_default=true")
 h2 Configuration
 table.table.table-striped.configuration
 	thead

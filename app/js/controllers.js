@@ -50,6 +50,9 @@ torstatControllers
 			$scope.circuitDetails = function(circuit){
 				$location.path(MenuHandler.getUrlForTemplateName('circuit-detail', {instanceId: $routeParams.instanceId, circuitId: circuit.id}));
 			};
+			$scope.go = function(templateName){
+				$location.path(MenuHandler.getUrlForTemplateName(templateName, $routeParams));
+			}
 			$scope.routerDetails = function(router){
 				$location.path(MenuHandler.getUrlForTemplateName('router-detail', {instanceId: $routeParams.instanceId, routerId: router.id}));
 			};
