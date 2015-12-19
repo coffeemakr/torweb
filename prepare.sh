@@ -1,6 +1,6 @@
 #!/bin/sh
-virtualenv virt
-. virt/bin/activate
+virtualenv venv
+. venv/bin/activate
 pip install -r requirements.txt
 
 npm install

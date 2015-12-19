@@ -1,3 +1,3 @@
 #/bin/sh
-. virt/bin/activate
+. venv/bin/activate
 python -m torweb
