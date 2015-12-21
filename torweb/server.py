@@ -14,7 +14,7 @@ class RootResource(resource.Resource):
     def __init__(self, basedir):
         resource.Resource.__init__(self)
 
-        with open(os.path.join(basedir, 'connections.json'), 'r') as config:
+        with open(os.path.join(basedir, 'torweb.json'), 'r') as config:
             connections = json.load(config)
 
         self.putChild('', util.Redirect('/app'))
