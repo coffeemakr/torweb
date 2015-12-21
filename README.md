@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/coffeemakr/torweb.svg)](https://travis-ci.org/coffeemakr/torweb)
+
 # Torweb
 
 **WARNING:** This application is currently unstable and might or might not work.
