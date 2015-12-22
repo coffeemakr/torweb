@@ -1,14 +1,13 @@
 language: python
-python:
-  - "2.7"
+env:
+  - TOX_ENV=py26
+  - TOX_ENV=py27
 install:
-  - npm install
-  - bower install
-  - pip install -r requirements.txt
+  - make python_packages
+  - make python_dev_packages
   - make
 script:
-  - nosetests
-  - coverage run setup.py build
+  - tox -e $TOX_ENV
 before_install:
   - pip install codecov
 after_success:

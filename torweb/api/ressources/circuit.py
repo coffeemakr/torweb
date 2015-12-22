@@ -16,7 +16,7 @@ class CircuitRoot(TorResource):
             return CircuitList(self.torstate)
         try:
             return Circuit(self.torstate.circuits[int(path)])
-        except KeyError, ValueError:
+        except (KeyError, ValueError):
             return resource.NoResource("No such circuit.")
 
 

@@ -138,8 +138,6 @@ class TorInstances(resource.Resource):
             self.instances[i] = TorInstance.from_configuration(config)
             self.instances[i].set_id(i)
 
-        render_GET = self.list.render_GET
-
     def getChild(self, torInstance, request):
         if not torInstance:
             return self.list
@@ -154,8 +152,8 @@ class TorInstances(resource.Resource):
             child = resource.NoResource("Instances does not exist")
         return child
 
-    def render_GET(self, request):
-        return this.list
+    def render_GET(self, *args, **kwargs):
+        return self.list.render_GET(*args, **kwargs)
 
 
 class TorInstanceList(resource.Resource):

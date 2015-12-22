@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, with_statement
 
-from twisted.web import server, resource, http, static, util
+from twisted.web import server, resource, static, util
 from twisted.internet import reactor
 from torweb.api.ressources import DNSRoot, TorInstances
 
-import txtorcon
 import os
 import json
 
@@ -44,9 +43,10 @@ def main():
                         type=int, help="Port to listen on. Default: 8082")
     parser.add_argument("--listen-address", metavar="IP",
                         help=("USE CAREFULLY! Set the IP-Address "
-                              "on which torweb listens."))
+                              "on which torweb listens."),
+                        default='127.0.0.1')
     parser.add_argument("-t", "--tls", action="store_true",
-                        default=False, help="Use TLS encryption.")
+                        help="Use TLS encryption.")
     parser.add_argument("-c", "--config", default="connections.json",
                         help="Set the configuration file.")
     parser.add_argument("-k", "--private-key", default="key.pem",
@@ -68,16 +68,16 @@ def main():
     s = server.Site(RootResource(rootFolder))
     if args.tls:
         from twisted.internet import ssl
-        with open(os.path.join(rootFolder, 'key.pem')) as certFile:
+        with open(os.path.join(rootFolder, args.private_key)) as certFile:
             certData = certFile.read()
-        with open(os.path.join(rootFolder, 'cert.pem')) as certFile:
+        with open(os.path.join(rootFolder, args.certificate)) as certFile:
             certData += certFile.read()
 
         certificate = ssl.PrivateCertificate.loadPEM(certData)
         reactor.listenSSL(args.port, s, certificate.options(),
-                          interface='127.0.0.1')
+                          interface=args.listen_address)
     else:
-        reactor.listenTCP(args.port, s, interface='127.0.0.1')
+        reactor.listenTCP(args.port, s, interface=args.listen_address)
     reactor.run()
 
 if __name__ == "__main__":

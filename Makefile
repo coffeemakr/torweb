@@ -8,12 +8,20 @@ HTML=${JADE_SRC:%.jade=%.html}
 
 NPM := npm
 
+VENV_DIR:=venv
+
 # NPM packages binary folder
 NODE_BIN := node_modules/.bin/
 NPM_TARGET := node_modules/.installed
 
-PIP_TARGET:=venv/.pip_installed
 PIP_SOURCE:=requirements.txt
+PIP_DEV_SOURCE:=dev-requirements.txt
+
+
+PYTHON_PACKAGES:=$(VENV_DIR)/.$(PIP_SOURCE)
+PYTHON_DEV_PACKAGES:=$(VENV_DIR)/.$(PIP_DEV_SOURCE)
+
+
 PIP := pip
 
 ifndef PRODUCTION
@@ -25,7 +33,7 @@ JADE=$(NODE_BIN)/jade $(JADE_ARGS)
 BOWER=$(NODE_BIN)/bower --allow-root  --config.interactive=false
 
 
-BOWER_TARGET=app/components/.installed
+BOWER_COMPONENTS=app/components/.installed
 BOWER_SOURCE=bower.json
 
 
@@ -33,21 +41,20 @@ GIT_HOOK_DIR=.git/hooks
 GIT_PRECOMMIT_HOOK=$(GIT_HOOK_DIR)/pre-commit
 
 .PHONY: all
-all: $(HTML) dev_requirements
+all: $(HTML) $(BOWER_COMPONENTS) $(PYTHON_PACKAGES)
 
 .PHONY: dev_requirements
-dev_requirements: $(BOWER_TARGET) $(PIP_TARGET)
+dev_requirements: $(NPM_TARGET) $(PYTHON_PACKAGES) $(PYTHON_DEV_PACKAGES)
 
 # Render HTML
 %.html: $(NPM_TARGET) %.jade
 	$(JADE) $^
 
-
 # Bower components
 .PHONY: components
-components: $(BOWER_TARGET)
+components: $(BOWER_COMPONENTS)
 
-$(BOWER_TARGET): $(NPM_TARGET) $(BOWER_SOURCE)
+$(BOWER_COMPONENTS): $(NPM_TARGET) $(BOWER_SOURCE)
 	$(BOWER) install
 	touch $@
 
@@ -60,9 +67,16 @@ $(NPM_TARGET):
 	touch $@
 
 # Python dependencies
-.PHONY: python_packages
-python_packages: $(PIP_TARGET)
-$(PIP_TARGET): $(PIP_SOURCE) $(VENV)
+.PHONY: python_packages python_dev_packages
+python_packages: $(PYTHON_PACKAGES)
+python_dev_packages: $(PYTHON_DEV_PACKAGES)
+
+.PHONY: force_python_dev_packages
+force_python_dev_packages: $(PIP_DEV_SOURCE)
+	touch $^
+	$(MAKE) python_dev_packages
+
+venv/.%: %
 	pip install -r $^
 	mkdir -p $(@D)
 	touch $@
@@ -77,7 +91,7 @@ clean_html:
 
 .PHONY: clean_components
 clean_components:
-	rm -rf $(dir $(BOWER_TARGET))
+	rm -rf $(dir $(BOWER_COMPONENTS))
 
 .PHONY: clean_npm
 clean_npm:
@@ -87,15 +101,24 @@ clean_npm:
 .PHONY: test
 test: pep8
 
-
 .PHONY: githook
 githook: $(GIT_PRECOMMIT_HOOK)
 $(GIT_PRECOMMIT_HOOK):
 	echo "#/bin/bash">$@
-	echo "make pep8">>$@
+	echo "make precommit_test">>$@
 	chmod +x $@
 
+.PHONY: clean_githook
+clean_githook:
+	rm -f $(GIT_PRECOMMIT_HOOK)
+
+precommit_test: pep8
+
 .PHONY: pep8
-pep8:
-	pep8 $(PY_SOURCES)
+pep8: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
+	pep8 $^
+
+.PHONY: pyflakes
+pyflakes: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
+	pyflakes $(PYPACKAGE)
 

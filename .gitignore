@@ -42,6 +42,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *,cover
+_trial_temp/
 
 # Translations
 *.mo
@@ -64,7 +65,7 @@ app/components/
 node_modules/
 
 # Python virtual environment
-virt/
+venv/
 
 # vim swap files
 *.swp
