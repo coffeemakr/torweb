@@ -3,32 +3,28 @@ from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
 from .base import TorResource
-from torweb.api.util import response
 from torweb.api.json import JsonRouter
 
-__all__ = ('RouterRoot', 'Router')
+__all__ = ('RouterRoot',)
 
 
 class RouterRoot(TorResource):
 
-    def getChild(self, name, request):
-        if not name:
-            return resource.NoResource("No List available.")
-        try:
-            name = '$' + name
-            return Router(self.torstate.routers[name])
-        except KeyError:
-            return resource.NoResource("No such router.")
+    json_detail_class = JsonRouter
+    json_list_class = JsonRouter
 
+    def get_list(self):
+        '''
+        Returns a list of router
+        '''
+        return self.torstate.routers_by_hash.values()
 
-class Router(resource.Resource):
-
-    isLeaf = True
-
-    def __init__(self, router):
-        resource.Resource.__init__(self)
-        self.router = router
-
-    @response.json
-    def render_GET(self, request):
-        return JsonRouter(self.router).json()
+    def get_by_id(self, ident):
+        '''
+        Returns a single router by its unique name
+        '''
+        if not ident.startswith('$'):
+            ident = '$' + ident
+        if ident not in self.torstate.routers_by_hash:
+            return None
+        return self.torstate.routers_by_hash[ident]

@@ -12,7 +12,7 @@ div(ng-if="!circuits.error")
         th.hidden-md-down Last Node IP
         th Actions
       tbody
-        tr(ng-repeat="circuit in circuits")
+        tr(ng-repeat="circuit in circuits.objects")
           td
             button.btn.btn-link(ng-click="circuitDetails(circuit)", title="Show the details of this ciruit.") {{circuit.id}}
           td

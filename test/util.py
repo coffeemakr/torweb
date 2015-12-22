@@ -14,3 +14,8 @@ def render(resource, request):
             return request.notifyFinish()
     else:
         raise ValueError("Unexpected return value: %r" % (result,))
+
+
+class DummyTorState(object):
+    def __init__(self):
+        pass

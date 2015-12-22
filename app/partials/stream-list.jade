@@ -15,7 +15,7 @@ div(ng-if="!streams.error")
         th Target Address
         th Actions
       tbody
-        tr(ng-repeat="s in streams")
+        tr(ng-repeat="s in streams.objects")
           td {{s.id}}
           td 
             span.label.label-pill(class="label-{{s.state | statusStyleSuffix}}") {{s.state}}

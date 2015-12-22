@@ -258,7 +258,9 @@ torstatServices
 					return null;
 				}
 				/** @type{string} */
-				var url = baseURL + 'tor/:instanceId/', idName;
+				var url = baseURL + 'tor/:instanceId/';
+				/** @type{string} */
+				var idName;
 				/** @dict */
 				var queryParams = {};
 				if(name == "instance"){
@@ -268,7 +270,7 @@ torstatServices
 					url += name + '/:' + idName;
 				}
 				queryParams[idName] = ''; 
-				var res = $resource(url, {}, {query: {method:'GET', params: queryParams, isArray:true}});
+				var res = $resource(url, {}, {query: {method:'GET', params: queryParams, isArray:false}});
 				return {
 					keyAttribute: "id", 
 					content: null,
@@ -305,10 +307,17 @@ torstatServices
 						this.contentIsArray = true;
 						this.setContent(this.ressource.query(params));
 						this.$promise.then(function(data){
-							that.contentById = {};
-							for (var i = data.length - 1; i >= 0; i--) {
-								that.contentById[data[i].id] = data[i];
-							};
+							if(data["error"]) {
+								that.content["error"] = {statusText: error, status: -2};
+							}else if(!data["objects"]){
+								that.content["error"] = {statusText: "Invalid response", status: -3};
+							}else{			
+								var objects = data["objects"];				
+								that.contentById = {};
+								for (var i = objects.length - 1; i >= 0; i--) {
+									that.contentById[objects[i].id] = objects[i];
+								};
+							}
 						});
 						return this.content;
 					},
