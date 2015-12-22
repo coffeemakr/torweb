@@ -8,7 +8,7 @@ install:
   - make
 script:
   - nosetests
-  - python setup.py build
+  - coverage run setup.py build
 before_install:
   - pip install codecov
 after_success:
