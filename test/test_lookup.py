@@ -31,3 +31,22 @@ class TestLookup(unittest.TestCase):
 			self.assertEquals(payload['host'], 'google-public-dns-a.google.com')
 			self.assertTrue('8.8.8.8' in payload['ips'])
 		d.addCallback(rendered)
+
+	def test_reverse_dns_unexisting_dns(self):
+		reverse = lookup.ReverseDNS('1.1.1.1')
+		request = DummyRequest([])
+		d = render(reverse, request)
+		def rendered(_):
+			payload = ''.join(request.written)
+			payload = json.loads(payload.decode('utf-8'))
+			self.assertIsInstance(payload, dict)
+			self.assertTrue('error' in payload)
+			self.assertTrue(type(payload['error']) in (str, unicode))
+			self.assertTrue('ips' in payload)
+			self.assertTrue('host' in payload)
+			self.assertTrue('alias' in payload)
+			self.assertEquals(payload['host'], None)
+			self.assertEquals(payload['alias'], [])
+			self.assertTrue('1.1.1.1' in payload['ips'])
+		d.addCallback(rendered)
+

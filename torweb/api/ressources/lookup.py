@@ -25,19 +25,21 @@ class ReverseDNS(resource.Resource):
         self.ip = ip
 
     def lookup(self):
-        host = None
-        alias = None
-        ips = []
+        result = {
+            'host': None,
+            'alias': [],
+            'ips': [self.ip]
+        }
+
         try:
             host, alias, ips = socket.gethostbyaddr(self.ip)
-        except socket.error:
-            pass
-
-        return {
-            'host': host,
-            'alias': alias,
-            'ips': ips
-        }
+        except socket.error as why:
+            result['error'] = why.message
+        else:
+            result['host'] = host
+            result['alias'] = alias
+            result['ips'] = ips
+        return result
 
     @response.json
     def render_GET(self, path):
