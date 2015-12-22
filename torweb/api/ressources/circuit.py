@@ -8,38 +8,41 @@ from .base import TorResource
 
 __all__ = ('CircuitRoot', 'CircuitList', 'Circuit')
 
+
 class CircuitRoot(TorResource):
-	def getChild(self, path, request):
-		if not path:
-			return CircuitList(self.torstate)
-		try:
-			return Circuit(self.torstate.circuits[int(path)])
-		except KeyError, ValueError:
-			return resource.NoResource("No such circuit.")
+
+    def getChild(self, path, request):
+        if not path:
+            return CircuitList(self.torstate)
+        try:
+            return Circuit(self.torstate.circuits[int(path)])
+        except KeyError, ValueError:
+            return resource.NoResource("No such circuit.")
+
 
 class CircuitList(TorResource):
-	
-	@response.json
-	def render_GET(self, request):
-		result = []
-		for c in self.torstate.circuits.values():
-			result.append(JsonCircuit(c).as_dict())
-		return result
+
+    @response.json
+    def render_GET(self, request):
+        result = []
+        for c in self.torstate.circuits.values():
+            result.append(JsonCircuit(c).as_dict())
+        return result
+
 
 class Circuit(resource.Resource):
 
-	isLeaf = True
+    isLeaf = True
 
-	def __init__(self, circuit):
-		resource.Resource.__init__(self)
-		self.circuit = circuit
+    def __init__(self, circuit):
+        resource.Resource.__init__(self)
+        self.circuit = circuit
 
-	@response.json
-	def render_GET(self, request):
-		return JsonCircuit(self.circuit).json()
-	
-	@response.json
-	def render_DELETE(self, request):
-		self.circuit.close()
-		return {}
+    @response.json
+    def render_GET(self, request):
+        return JsonCircuit(self.circuit).json()
 
+    @response.json
+    def render_DELETE(self, request):
+        self.circuit.close()
+        return {}

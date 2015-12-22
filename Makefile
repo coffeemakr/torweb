@@ -29,6 +29,9 @@ BOWER_TARGET=app/components/.installed
 BOWER_SOURCE=bower.json
 
 
+GIT_HOOK_DIR=.git/hooks
+GIT_PRECOMMIT_HOOK=$(GIT_HOOK_DIR)/pre-commit
+
 .PHONY: all
 all: $(HTML) dev_requirements
 
@@ -84,6 +87,13 @@ clean_npm:
 .PHONY: test
 test: pep8
 
+
+.PHONY: githook
+githook: $(GIT_PRECOMMIT_HOOK)
+$(GIT_PRECOMMIT_HOOK):
+	echo "#/bin/bash">$@
+	echo "make pep8">>$@
+	chmod +x $@
 
 .PHONY: pep8
 pep8:

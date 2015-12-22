@@ -8,26 +8,27 @@ from torweb.api.json import JsonRouter
 
 __all__ = ('RouterRoot', 'Router')
 
+
 class RouterRoot(TorResource):
-	def getChild(self, name, request):
-		if not name:
-			return resource.NoResource("No List available.")
-		try:
-			name = '$' + name
-			return Router(self.torstate.routers[name])
-		except KeyError:
-			return resource.NoResource("No such router.")
+
+    def getChild(self, name, request):
+        if not name:
+            return resource.NoResource("No List available.")
+        try:
+            name = '$' + name
+            return Router(self.torstate.routers[name])
+        except KeyError:
+            return resource.NoResource("No such router.")
 
 
 class Router(resource.Resource):
 
-	isLeaf = True
+    isLeaf = True
 
-	def __init__(self, router):
-		resource.Resource.__init__(self)
-		self.router = router
+    def __init__(self, router):
+        resource.Resource.__init__(self)
+        self.router = router
 
-	@response.json
-	def render_GET(self, request):
-		return JsonRouter(self.router).json()
-	
+    @response.json
+    def render_GET(self, request):
+        return JsonRouter(self.router).json()

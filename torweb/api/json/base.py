@@ -10,7 +10,14 @@ from txtorcon.util import ipaddr as ipaddress
 
 __all__ = ('JsonObject',)
 
+
+IPADDRESSES = (ipaddress.IPv4Address,
+               ipaddress.IPv6Address,
+               ipaddress.IPAddress)
+
+
 class JsonObject(object):
+
     def __init__(self, txtor):
         self.txtor = txtor
 
@@ -23,10 +30,10 @@ class JsonObject(object):
                 value = value.isoformat()
             elif isinstance(value, txtorcon.util.NetLocation):
                 value = {'cc': value.countrycode}
-            elif type(value) in (ipaddress.IPv4Address, ipaddress.IPv6Address, ipaddress.IPAddress):
+            elif type(value) in IPADDRESSES:
                 value = value.exploded
             result[attr] = value
         return result
 
     def json(self):
-        return json.dumps(self.as_dict()).encode('utf8') 
+        return json.dumps(self.as_dict()).encode('utf8')

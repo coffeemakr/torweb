@@ -15,11 +15,12 @@ from txtorcon import TorProtocolFactory
 
 __all__ = ('TorInstances', 'TorInstance')
 
+
 class TorInstance(resource.Resource):
     '''
     A resource for a single tor instance.
     '''
-    
+
     #: State tracker
     sate = None
 
@@ -29,7 +30,8 @@ class TorInstance(resource.Resource):
     def __init__(self, endpoint):
         resource.Resource.__init__(self)
 
-        d = endpoint.connect(TorProtocolFactory(password_function=self.password_callback))
+        d = endpoint.connect(TorProtocolFactory(
+            password_function=self.password_callback))
         d.addCallback(self._build_state)
         d.addErrback(self._connection_failed)
 
@@ -85,7 +87,7 @@ class TorInstance(resource.Resource):
     @property
     def has_state(self):
         return self.state is not None
-    
+
     @property
     def is_connected(self):
         return True
@@ -98,7 +100,7 @@ class TorInstance(resource.Resource):
         obj.port = port
         obj.host = 'localhost'
         return obj
-    
+
     @property
     def configuration(self):
         config = []
@@ -106,7 +108,6 @@ class TorInstance(resource.Resource):
             for name, value in self._configuration.config_args():
                 config.append({"name": name, "value": value})
         return config
-                
 
     @classmethod
     def from_configuration(cls, config):
@@ -122,6 +123,7 @@ class TorInstance(resource.Resource):
 
     id = property(get_id, set_id)
 
+
 class TorInstances(resource.Resource):
 
     #: Dictionary containing the tor instances by their IDs.
@@ -135,7 +137,7 @@ class TorInstances(resource.Resource):
         for i, config in enumerate(self.config["connections"]):
             self.instances[i] = TorInstance.from_configuration(config)
             self.instances[i].set_id(i)
-        
+
         render_GET = self.list.render_GET
 
     def getChild(self, torInstance, request):
@@ -153,8 +155,7 @@ class TorInstances(resource.Resource):
         return child
 
     def render_GET(self, request):
-        return this.list;
-
+        return this.list
 
 
 class TorInstanceList(resource.Resource):
@@ -163,7 +164,7 @@ class TorInstanceList(resource.Resource):
 
     def __init__(self, instances):
         self.instances = instances
-    
+
     @response.json
     def render_GET(self, request):
         result = []

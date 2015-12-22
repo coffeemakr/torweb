@@ -6,8 +6,10 @@ from .base import JsonObject
 
 __all__ = ('JsonTorInstance', 'JsonTorInstanceMinimal')
 
+
 class JsonTorInstanceMinimal(JsonObject):
-	attributes = ('id', 'is_connected', 'host', 'port')
+    attributes = ('id', 'is_connected', 'host', 'port')
+
 
 class JsonTorInstance(JsonObject):
-	attributes = ('id', 'is_connected', 'host', 'port', 'configuration')
+    attributes = ('id', 'is_connected', 'host', 'port', 'configuration')

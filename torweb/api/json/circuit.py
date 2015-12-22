@@ -5,7 +5,7 @@ from .router import JsonRouterMinimal
 from .base import JsonObject
 
 __all__ = ('JsonCircuitMinimal', 'JsonCircuit')
-        
+
 
 class JsonCircuit(JsonObject):
 
@@ -29,7 +29,6 @@ class JsonCircuit(JsonObject):
         result = super(JsonCircuit, self).as_dict()
         result['path'] = self.get_path(result['path'])
         return result
-    
 
 
 class JsonCircuitMinimal(JsonCircuit):
