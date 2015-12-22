@@ -49,4 +49,5 @@ class TestLookup(unittest.TestCase):
 			self.assertEquals(payload['alias'], [])
 			self.assertTrue('1.1.1.1' in payload['ips'])
 		d.addCallback(rendered)
+		d.addErrback(self.fail)
 
