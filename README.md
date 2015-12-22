@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/coffeemakr/torweb.svg)](https://travis-ci.org/coffeemakr/torweb)
+[![Build Status](https://travis-ci.org/coffeemakr/torweb.svg)](https://travis-ci.org/coffeemakr/torweb) 
+[![codecov.io](https://codecov.io/github/coffeemakr/torweb/coverage.svg?branch=master)](https://codecov.io/github/coffeemakr/torweb?branch=master)
 
 # Torweb
 
