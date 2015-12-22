@@ -1,3 +1,4 @@
+tox
 flakes
 coverage
 pep8
