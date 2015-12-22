@@ -1,4 +1,6 @@
 
+PYPACKAGE=torweb
+PY_SOURCES=$(shell find $(PYPACKAGE)/ -type f -name '*.py')
 STATIC_DIR=app
 
 JADE_SRC=$(wildcard $(STATIC_DIR)/*.jade) $(wildcard $(STATIC_DIR)/partials/*.jade)
@@ -77,3 +79,13 @@ clean_components:
 .PHONY: clean_npm
 clean_npm:
 	rm -rf $(dir $(NPM_TARGET))
+
+
+.PHONY: test
+test: pep8
+
+
+.PHONY: pep8
+pep8:
+	pep8 $(PY_SOURCES)
+
