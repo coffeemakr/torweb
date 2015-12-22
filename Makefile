@@ -99,7 +99,11 @@ clean_npm:
 
 
 .PHONY: test
-test: pep8
+test: pep8 trial_test
+
+.PHONY: trial_test
+trial_test:
+	trial --reporter=text test
 
 .PHONY: githook
 githook: $(GIT_PRECOMMIT_HOOK)
