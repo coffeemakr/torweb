@@ -2,7 +2,6 @@
 from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
-from .error import ResourceError
 
 from torweb.api.util import response
 
