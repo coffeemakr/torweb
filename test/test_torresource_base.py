@@ -117,6 +117,17 @@ class TestTorResourceBase(unittest.TestCase):
         child = r.getChildWithDefault('1', request)
         self.assertIsInstance(child, NoResource)
 
+    def test_empty_identifier(self):
+        parent = self
+        class LocalTorResource(TorResourceWithJson):
+            def get_by_id(self, ident):
+                parent.fail("get_by_id called")
+
+        request = DummyRequest([''])
+        r = LocalTorResource(self.torstate)
+        child = r.getChildWithDefault('', request)
+        self.assertIsInstance(child, NoResource)
+
     def test_unexisting_identifier(self):
 
         class LocalTorResource(TorResourceWithJson):
@@ -178,34 +189,23 @@ class TestTorResourceBase(unittest.TestCase):
         d.addCallback(onresponse)
         d.addErrback(self.fail)
 
-    def test_render_list_without_state(self):
+    def test_get_child_without_satte(self):
         class LocalTorResource(TorResourceWithJson):
-            def get_list(self):
-                return range(100)
+            def get_by_id(self, ident):
+                raise RuntimeError("called")
 
         request = DummyRequest([''])
         request.responseCode = 200
         resource = LocalTorResource()
-        d = render(resource, request)
-
-        def onresponse(_):
-            self.assertEquals(request.responseCode, 200,
-                              msg=request.responseCode)
-            payload = ''.join(request.written)
-            payload = json.loads(payload.decode('utf-8'))
-            self.assertIsInstance(payload, dict)
-            self.assertTrue('error' in payload, msg=payload)
-            self.assertTrue('state' in payload['error'], msg=payload['error'])
-        d.addCallback(onresponse)
-        d.addErrback(self.fail)
-
+        child = resource.getChildWithDefault('1', request)
+        self.assertIsInstance(child, NoResource)
 
 class TestTorResourceDetail(unittest.TestCase):
     def test_render(self):
         r = base.TorResourceDetail(1, JsonClass)
         request = DummyRequest([])
         d = render(r, request)
-    
+
         def checkResult(*args):
             payload = ''.join(request.written)
             payload = json.loads(payload.decode('utf-8'))
