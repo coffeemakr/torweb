@@ -4,7 +4,7 @@
 div(ng-if="!instances.error")
   h1 Tor Instances
   .list-group
-    a.list-group-item(ng-repeat="instance in instances.objects" href="#/{{instance.id}}/")
+    a.list-group-item(ng-repeat="instance in instances" href="#/{{instance.id}}/")
       h4.list-group-item-heading Instance
       p.list-group-item-text
         | Port {{instance.port}}, Host {{instance.host}}
