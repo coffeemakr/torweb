@@ -2,7 +2,6 @@ language: python
 dist: precise
 
 env:
-  - TOX_ENV=py26
   - TOX_ENV=py27
 install:
   - make python_packages
