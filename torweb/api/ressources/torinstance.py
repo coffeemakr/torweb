@@ -133,14 +133,11 @@ class TorInstances(resource.Resource):
         resource.Resource.__init__(self)
         self.config = config
         self.instances = {}
-        self.list = TorInstanceList(self.instances)
         for i, config in enumerate(self.config["connections"]):
             self.instances[i] = TorInstance.from_configuration(config)
             self.instances[i].set_id(i)
 
     def getChild(self, torInstance, request):
-        if not torInstance:
-            return self.list
         child = None
         try:
             torInstance = int(torInstance)
@@ -152,20 +149,10 @@ class TorInstances(resource.Resource):
             child = resource.NoResource("Instances does not exist")
         return child
 
-    def render_GET(self, *args, **kwargs):
-        return self.list.render_GET(*args, **kwargs)
-
-
-class TorInstanceList(resource.Resource):
-
-    isLeaf = True
-
-    def __init__(self, instances):
-        self.instances = instances
-
     @response.json
     def render_GET(self, request):
         result = []
         for instance in self.instances.values():
             result.append(JsonTorInstanceMinimal(instance).as_dict())
-        return result
+        return {'objects': result}
+
