@@ -281,8 +281,8 @@ torstatServices
 					contentIsArray: false,
 
 					addObject: function(content){
-						if(this.contentIsArray && this.content !== null){
-							this.content.push(content);
+						if(this.content !== null && this.content.objects){
+							this.content.objects.push(content);
 							this.contentById[content.id] = content;
 						}
 					},
