@@ -155,4 +155,3 @@ class TorInstances(resource.Resource):
         for instance in self.instances.values():
             result.append(JsonTorInstanceMinimal(instance).as_dict())
         return {'objects': result}
-
