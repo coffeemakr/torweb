@@ -2,17 +2,26 @@
 from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
+from twisted.web.server import NOT_DONE_YET
 
 from torweb.api.util import response
-
 __all__ = ('TorResource', 'TorResourceDetail')
 
 
 class TorResource(resource.Resource):
+    '''
+    Base class for resources bound to a tor instance.
+    '''
 
+    #: Class to serialize an object for lists.
     json_list_class = None
+
+    #: Class to serialize the object with the max. verbosity.
     json_detail_class = None
 
+    #: Class for child resources. This should be an subclass of
+    #: :class:`TorResourceDetail` or :class:`resource.Resource` which takes
+    #: the same constructor parameters as :class:`TorResourceDetail`.
     detail_class = None
 
     def __init__(self, torstate=None):
@@ -33,12 +42,19 @@ class TorResource(resource.Resource):
 
     def get_by_id(self, ident):
         '''
-        Should return a single object
+        Should return a single object.
+
+        :param ident: The identifier
         '''
         raise NotImplementedError()
 
     @response.json
     def render_GET(self, request):
+        '''
+        Renders a json list of all children.
+
+        ..todo:: return NOT_DONE_YET and write each child seperatly.
+        '''
         error = self.check_torstate()
         result = {}
         if error is None:
@@ -50,6 +66,15 @@ class TorResource(resource.Resource):
         return result
 
     def getChild(self, ident, request):
+        '''
+        Get the resource to render and/or manupilute a single child resource.
+
+        If :attr:`detail_class` is set an object of this class is returned.
+        Otherwise a :class:`TorResourceDetail` instance is created.
+
+        This method calls :meth:`get_by_id` with the url parameter as
+        identifier.
+        '''
         error = self.check_torstate()
         if error is None:
             if not ident:
