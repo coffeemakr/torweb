@@ -1,20 +1,40 @@
-h1 Tor Instance
-button.btn.btn-primary(ng-click="go('circuit-list')") Circuits
-button.btn.btn-primary(ng-click="go('stream-list')") Streams
+.errorpage(ng-if="instance.error", class="{{instance.error.status}}")
+  h1 Error: {{instance.error.status}}
+  h2 {{instance.error.statusText}}
+div(ng-if="!instance.error")
+  h1 Tor Instance
+  div(ng-if="instance.connected")
+    button.btn.btn-primary(ng-click="go('circuit-list')") Circuits
+    button.btn.btn-primary(ng-click="go('stream-list')") Streams
 
-h2 Connection
-p Port {{instance.port}}
-p Host {{instance.host}}
-label
-	| Hide default values
-	input(type="checkbox", ng-model="hide_default", ng-init="hide_default=true")
-h2 Configuration
-table.table.table-striped.configuration
-	thead
-		tr
-			th Name
-			th Value
-	tbody
-		tr(ng-repeat="config in instance.configuration", ng-if="!hide_default || config.value != 'DEFAULT'")
-			td {{config.name}}
-			td {{config.value}}
+  h2 Connection &nbsp;
+    span(ng-if="instance.connected").label.label-pill.label-success Succeeded
+    span(ng-if="!instance.connected").label.label-pill.label-danger Failed
+  .row(ng-if="instance.connection_error")
+    .col-sm-1
+      strong Error
+    .col-sm-11 {{instance.connection_error.message}}
+  .row
+    .col-sm-1
+      strong Port
+    .col-sm-11 {{instance.port}}
+  .row
+    .col-sm-1
+      strong Host
+    .col-sm-11 {{instance.host}}
+  h2 Configuration
+  div(ng-if="instance.configuration")
+    label
+      input(type="checkbox", ng-model="show_default", ng-init="show_default=false")
+      | &nbsp; Show default values
+    table.table.table-striped.configuration
+      thead
+        tr
+          th Name
+          th Value
+      tbody
+        tr(ng-repeat="config in instance.configuration", ng-if="show_default || config.value != 'DEFAULT'")
+          td {{config.name}}
+          td {{config.value}}
+  p(ng-if="!instance.configuration")
+    i Configuration is not available.

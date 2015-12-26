@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, with_statement
 
-from torweb.api.json import JsonTorInstanceMinimal, JsonTorInstance
-from torweb.api.util import response
 
 from twisted.web import resource
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
-from torweb.api.ressources import CircuitRoot, RouterRoot, StreamRoot
-from torweb.api import websocket
 from autobahn.twisted.resource import WebSocketResource
 import txtorcon
-from txtorcon import TorProtocolFactory
+
+from torweb.api.json import JsonTorInstanceMinimal, JsonTorInstance
+from torweb.api.util import response
+from torweb.api.ressources import CircuitRoot, RouterRoot, StreamRoot
+from torweb.api import websocket
+from torweb.error import ConfigurationError
 
 __all__ = ('TorInstances', 'TorInstance')
 
@@ -22,16 +23,31 @@ class TorInstance(resource.Resource):
     '''
 
     #: State tracker
-    sate = None
+    state = None
 
+    #: Tor control port
     port = None
+    #: Tor control host
     host = None
 
-    def __init__(self, endpoint):
+    def __init__(self, port, host='127.0.0.1', password=None):
         resource.Resource.__init__(self)
 
-        d = endpoint.connect(TorProtocolFactory(
-            password_function=self.password_callback))
+        self._password = None
+        self._id = None
+        self._configuration = None
+        self.connection_error = None
+
+        self.host = host
+        self.port = port
+
+        if password is not None:
+            self.set_password(password)
+
+        self.endpoint = TCP4ClientEndpoint(reactor, self.host, port)
+
+        d = self.endpoint.connect(txtorcon.TorProtocolFactory(
+            password_function=self._password_callback))
         d.addCallback(self._build_state)
         d.addErrback(self._connection_failed)
 
@@ -45,14 +61,15 @@ class TorInstance(resource.Resource):
         self.websocket_factory = websocket.TorWebSocketServerFactory()
         self.websocket = WebSocketResource(self.websocket_factory)
         self.putChild('websocket', self.websocket)
-        self._configuration = None
 
-    def _connection_failed(self, *args):
-        print("Connection failed: %s" % args)
-        # pass to the next errorback
-        return args
+    def _connection_failed(self, error):
+        print("Connection failed: %s" % error.getBriefTraceback())
+        self.connected = False
+        self.connection_error = error
 
     def _connection_bootstrapped(self, *args):
+        self.connected = True
+        self.connection_error = None
         print("Connection suceeded %s " % args)
         d = txtorcon.TorConfig.from_connection(self.protocol)
         d.addCallback(self._configuration_callback)
@@ -72,52 +89,61 @@ class TorInstance(resource.Resource):
         self.websocket_factory.set_torstate(self.state)
         return proto
 
-    @response.json
-    def render_GET(self, request):
-        return JsonTorInstance(self).as_dict()
-
-    def password_callback(self):
+    def _password_callback(self):
         print('returned password')
-        return "secret"
+        return self._password
+
+    def set_password(self, password):
+        self._password = password
+
+    def get_password(self):
+        return self._password
+
+    password = property(get_password, set_password)
 
     @property
     def has_state(self):
         return self.state is not None
 
     @property
-    def is_connected(self):
-        return True
-
-    @classmethod
-    def from_port(cls, port):
-        endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", port)
-        obj = cls(endpoint)
-        # TODO: change hacky way to set attributes
-        obj.port = port
-        obj.host = 'localhost'
-        return obj
-
-    @property
     def configuration(self):
-        config = []
+        '''
+        Returns iterable.
+        '''
         if self._configuration is not None:
+            configs = []
             for name, value in self._configuration.config_args():
-                config.append({"name": name, "value": value})
-        return config
-
-    @classmethod
-    def from_configuration(cls, config):
-        if 'port' in config:
-            return cls.from_port(config['port'])
-        raise ValueError()
+                configs.append({"name": name, "value": value})
+            return configs
+        return None
 
     def set_id(self, id):
+        '''
+        Sets the identifiert of this instance.
+        '''
         self._id = id
 
     def get_id(self):
+        '''
+        Return the identifier for this instance.
+        If the identifier is not set previously, a new identifier is generated
+        by calling the :func:`hash` function.
+        '''
+        if self._id is None:
+            ident = hash(self)
+            ident *= 10
+            if ident < 0:
+                ident *= -1
+            else:
+                ident += 1
+            self._id = str(ident)
         return self._id
 
     id = property(get_id, set_id)
+
+    @response.json
+    def render_GET(self, request):
+        return JsonTorInstance(self).as_dict()
 
 
 class TorInstances(resource.Resource):
@@ -130,20 +156,21 @@ class TorInstances(resource.Resource):
         self.config = config
         self.instances = {}
         for i, config in enumerate(self.config["connections"]):
-            self.instances[i] = TorInstance.from_configuration(config)
-            self.instances[i].set_id(i)
+            instance = self._get_instance_from_config(config)
+            self.instances[instance.id] = instance
+            # self.instances[i].set_id(i)
+
+    def _get_instance_from_config(self, config):
+        try:
+            config['port'] = int(config['port'])
+        except ValueError:
+            raise ConfigurationError("Port must be an integer.")
+        return TorInstance(**config)
 
     def getChild(self, torInstance, request):
-        child = None
-        try:
-            torInstance = int(torInstance)
-        except ValueError:
-            return resource.NoResource("No such instance")
         if torInstance in self.instances:
-            child = self.instances[torInstance]
-        if child is None:
-            child = resource.NoResource("Instances does not exist")
-        return child
+            return self.instances[torInstance]
+        return resource.NoResource("Instances does not exist.")
 
     @response.json
     def render_GET(self, request):

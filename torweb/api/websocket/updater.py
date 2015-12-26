@@ -105,6 +105,8 @@ class TorWebSocketServerFactory(WebSocketServerFactory):
 
     protocol = MyServerProtocol
 
+    state = None
+
     def set_torstate(self, state):
         self.state = state
         return state
@@ -112,7 +114,9 @@ class TorWebSocketServerFactory(WebSocketServerFactory):
     def buildProtocol(self, *args, **kwargs):
         proto = super(TorWebSocketServerFactory,
                       self).buildProtocol(*args, **kwargs)
-        self.state.add_circuit_listener(proto)
-        self.state.add_stream_listener(proto)
-        print("listener added!")
+        if self.state:
+            self.state.add_circuit_listener(proto)
+            self.state.add_stream_listener(proto)
+        else:
+            print("no listeners added!")
         return proto
