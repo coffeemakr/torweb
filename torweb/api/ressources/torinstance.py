@@ -47,10 +47,6 @@ class TorInstance(resource.Resource):
         self.putChild('websocket', self.websocket)
         self._configuration = None
 
-    def getChild(self, child,  request):
-        if not child:
-            return self
-
     def _connection_failed(self, *args):
         print("Connection failed: %s" % args)
         # pass to the next errorback
