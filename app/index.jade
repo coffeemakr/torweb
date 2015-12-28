@@ -29,16 +29,14 @@ html(lang="en", ng-app="torstatApp")
         .container
           nav.navbar.navbar-dark.bg-inverse
             a.navbar-brand(href="#/") Torweb
-            // currently broken 
-              ul.nav.navbar-nav
-                li.nav-item
-                  a.nav-link(href="#/{{tor.id}}/circuits")
-                    | Circuits
-                    span.sr-only
-                li.nav-item
-                  a.nav-link(href="#/{{tor.id}}/streams")
-                    | Streams
-                    span.sr-only
+            ul.nav.navbar-nav(ng-if="route.instanceId")
+              li.nav-item
+                a.nav-link(ng-click="go('circuit-list')") Circuits
+              li.nav-item
+                a.nav-link(ng-click="go('stream-list')") Streams
+              li.nav-item
+                a.nav-link(ng-click="go('config-list')") Configuration
+                  
         .container
           ol.breadcrumb
             li(ng-repeat="crumb in breadcrumbs", class="{{crumb.class}}")

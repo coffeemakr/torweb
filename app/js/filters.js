@@ -54,4 +54,16 @@ angular.module('torstatFilters', [])
 				'running': 'check'
 			}[input];
 		}
+	})
+	.filter('InputType', function(){
+		return function(input){
+			switch(typeof input){
+				case "boolean":
+					return "checkbox";
+				case "number":
+					return "number";
+				default:
+					return "text";
+			}
+		}
 	});

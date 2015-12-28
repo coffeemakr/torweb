@@ -45,6 +45,16 @@ torstatApp
 					controller: 'TorRessourceCtrl',
 					name: 'Circuit :circuitId'
 				})
+				.when('/:instanceId/config', {
+					templateUrl: 'partials/config-list.html',
+					controller: 'TorRessourceCtrl',
+					name: 'Configuration'
+				})
+				.when('/:instanceId/config/:configId', {
+					templateUrl: 'partials/config-detail.html',
+					controller: 'TorRessourceCtrl',
+					name: ':configId'
+				})
 				.otherwise({
 					redirectTo: '/'
 				});

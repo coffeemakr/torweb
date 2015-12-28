@@ -10,7 +10,8 @@ import txtorcon
 
 from torweb.api.json import JsonTorInstanceMinimal, JsonTorInstance
 from torweb.api.util import response
-from torweb.api.ressources import CircuitRoot, RouterRoot, StreamRoot
+from torweb.api.ressources import CircuitRoot, RouterRoot
+from torweb.api.ressources import StreamRoot, ConfigurationRoot
 from torweb.api import websocket
 from torweb.error import ConfigurationError
 
@@ -30,13 +31,15 @@ class TorInstance(resource.Resource):
     #: Tor control host
     host = None
 
+    #: Error set if the connection failed.
+    connection_error = None
+
     def __init__(self, port, host='127.0.0.1', password=None):
         resource.Resource.__init__(self)
 
         self._password = None
         self._id = None
         self._configuration = None
-        self.connection_error = None
 
         self.host = host
         self.port = port
@@ -54,18 +57,20 @@ class TorInstance(resource.Resource):
         self.circuitRoot = CircuitRoot()
         self.routerRoot = RouterRoot()
         self.streamRoot = StreamRoot()
+        self.configRoot = ConfigurationRoot()
         self.putChild('circuit', self.circuitRoot)
         self.putChild('router', self.routerRoot)
         self.putChild('stream', self.streamRoot)
+        self.putChild('config', self.configRoot)
 
         self.websocket_factory = websocket.TorWebSocketServerFactory()
         self.websocket = WebSocketResource(self.websocket_factory)
         self.putChild('websocket', self.websocket)
 
     def _connection_failed(self, error):
-        print("Connection failed: %s" % error.getBriefTraceback())
         self.connected = False
         self.connection_error = error
+        print("Connection failed: %s" % error.getBriefTraceback())
 
     def _connection_bootstrapped(self, *args):
         self.connected = True
@@ -77,6 +82,7 @@ class TorInstance(resource.Resource):
 
     def _configuration_callback(self, config):
         self._configuration = config
+        self.configRoot.configuration = config
 
     def _build_state(self, proto):
         self.protocol = proto
@@ -157,17 +163,31 @@ class TorInstances(resource.Resource):
         self.instances = {}
         for i, config in enumerate(self.config["connections"]):
             instance = self._get_instance_from_config(config)
+            instance.set_id(str(i))
             self.instances[instance.id] = instance
-            # self.instances[i].set_id(i)
 
     def _get_instance_from_config(self, config):
+        if 'port' not in config:
+            raise ConfigurationError("Port not defined.")
+        if 'host' not in config:
+            raise ConfigurationError("Host not defined.")
+
+        arguments = ('port', 'host', 'password')
+        kwargs = {}
+        for keyword in arguments:
+            if keyword in config:
+                kwargs[keyword] = config[keyword]
+
         try:
-            config['port'] = int(config['port'])
+            kwargs['port'] = int(kwargs['port'])
         except ValueError:
             raise ConfigurationError("Port must be an integer.")
-        return TorInstance(**config)
+        return TorInstance(**kwargs)
 
     def getChild(self, torInstance, request):
+        '''
+        Returns the torinstance.
+        '''
         if torInstance in self.instances:
             return self.instances[torInstance]
         return resource.NoResource("Instances does not exist.")

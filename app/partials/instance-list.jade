@@ -1,10 +1,8 @@
-.errorpage(ng-if="instances.error", class="{{instances.error.status}}")
-  h1 Error: {{instances.error.status}}
-  h2 {{instances.error.statusText}}
-div(ng-if="!instances.error")
+include includes/error
+div(ng-if="!content.error")
   h1 Tor Instances
   .list-group
-    a.list-group-item(ng-repeat="instance in instances.objects" href="#/{{instance.id}}/")
+    a.list-group-item(ng-repeat="instance in instances" href="#/{{instance.id}}/")
       .list-group-item-heading
         h4 Instance
         span(ng-if="instance.connected").label.label-pill.label-success.pull-xs-right Connected

@@ -1,0 +1,19 @@
+include includes/error
+div(ng-if="!content.error")
+  h1 Configuration
+  div(ng-if="configs")
+    label
+      input(type="checkbox", ng-model="show_default", ng-init="show_default=false")
+      | &nbsp; Show default values
+    table.table.table-striped.configuration
+      thead
+        tr
+          th Name
+          th Value
+      tbody
+        tr(ng-repeat="config in configs | orderBy:'name'", ng-if="show_default || config.value != 'DEFAULT'")
+          td
+            button.btn.btn-link(ng-click="configDetails(config)") {{config.name}}
+          td {{config.value}}
+  p(ng-if="!configs")
+    i Configuration is not available.

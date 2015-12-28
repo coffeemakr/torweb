@@ -7,6 +7,7 @@ import datetime
 import txtorcon
 from txtorcon.util import ipaddr as ipaddress
 
+from torweb.api.util import geoip
 
 __all__ = ('JsonObject',)
 
@@ -17,6 +18,7 @@ IPADDRESSES = (ipaddress.IPv4Address,
 
 
 class JsonObject(object):
+    rename = ()
 
     def __init__(self, txtor):
         self.txtor = txtor
@@ -29,10 +31,15 @@ class JsonObject(object):
             if isinstance(value, datetime.datetime):
                 value = value.isoformat()
             elif isinstance(value, txtorcon.util.NetLocation):
-                value = {'cc': value.countrycode}
+                value = {'country': value.countrycode}
+                value['country_name'] = geoip.get_country_name(value[
+                                                               'country'])
             elif type(value) in IPADDRESSES:
                 value = value.exploded
             result[attr] = value
+        for old, new in self.rename:
+            if old in result:
+                result[new] = result.pop(old)
         return result
 
     def json(self):

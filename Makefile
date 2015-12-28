@@ -46,6 +46,8 @@ all: $(HTML) $(BOWER_COMPONENTS) $(PYTHON_PACKAGES)
 .PHONY: dev_requirements
 dev_requirements: $(NPM_TARGET) $(PYTHON_PACKAGES) $(PYTHON_DEV_PACKAGES)
 
+.PHONY: html
+html: $(HTML)
 # Render HTML
 %.html: $(NPM_TARGET) %.jade
 	$(JADE) $^

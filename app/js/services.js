@@ -19,6 +19,11 @@ function updateObject(src, dst){
 		}
 	}
 }
+function clearObject(obj){
+	for (var member in obj){
+		delete obj[member];
+	}
+}
 
 /** @constructor */
 function LogService(){
@@ -253,6 +258,8 @@ torstatServices
 		function($resource, baseURL){
 			/** @dict */
 			var resources = {};
+			var error = {};
+
 			function createRessource(name){
 				if(!name){
 					return null;
@@ -270,73 +277,129 @@ torstatServices
 					url += name + '/:' + idName;
 				}
 				queryParams[idName] = ''; 
+				
 				var res = $resource(url, {}, {query: {method:'GET', params: queryParams, isArray:false}});
+				
+
 				return {
-					keyAttribute: "id", 
-					content: null,
+					content: {
+						object: {},
+						list: [],
+						error: error,
+						async_errors: []
+					},
 					ressource: res,
 					delete: res.delete,
+					
 					/** @dict */
-					contentById: null,
-					contentIsArray: false,
-
+					contentById: {},
 					addObject: function(content){
-						if(this.content !== null && this.content.objects){
-							this.content.objects.push(content);
+						if(this.content.list){
+							this.content.list.push(content);
 							this.contentById[content.id] = content;
 						}
 					},
-
-					setContent: function(content){
+					clear: function(){
+						clearObject(this.content.object);
+						this.content.list.length = 0;
+						this.content.error = null;
+						this.content.async_errors.length = 0;
+					},
+					_getCallback: function(async){
+						if(angular.isUndefined(async)){
+							async = false;
+						}
 						var that = this;
-						this.contentById = {};
-						this.content = content;
-						this.$promise = content.$promise;
-						this.$promise.catch(function(error){
-							console.error(error);
-							if(error.status == -1){
-								if(error.statusText.length == 0){
-									error.statusText = "Unable to connect to the server.";
+						return function(data){
+							if(data.error) {
+								console.log(data.error);
+								if(async){
+									that.content.async_errors.push(data.error);
+								}else{
+									that.content.error = data.error;
+								}
+							}else{
+								that.content.error = null;
+								if(angular.isUndefined(data.objects)) {
+									console.log("get", data);
+									// get/update or something else
+									// TODO: update only
+									var id = data.id;
+									if(angular.isUndefined(id)){
+										console.error("Didn't find id.", data);
+									} else {
+										if(that.contentById.hasOwnProperty(id)){
+											updateObject(data, that.contentById[id]);
+										} else {
+											that.contentById[id] = data;
+										}
+										updateObject(that.contentById[id], that.content.object);
+										console.log(that.content.object);
+									}
+								} else {
+									console.log("query", data);
+									var objects = data.objects;
+									that.contentById = {};
+									that.content.list.length = 0;
+									for (var i = 0; i < objects.length; i++) {
+										that.contentById[objects[i].id] = objects[i];
+										that.content.list.push(objects[i]);
+									};
 								}
 							}
-							that.content["error"] = error;
-						});
+						};
+					},
+					_getErrback: function(){
+						var that = this;
+						return function(error){
+							var errorObject = {name: "Error", message: "Unknown Error"};
+							if(error.status == -1){
+								errorObject.name = "Connection Error";
+								errorObject.message = "Unable to connect to the server.";
+							}else{
+								errorObject.name = "HTTP Error";
+								errorObject.message = error.statusText;
+							}
+							that.content.error = errorObject;
+						}
+					},
+					_call: function(func_name, params, data){
+						var response = this.ressource[func_name](params, data);
+						response.$promise.then(this._getCallback());
+						response.$promise.catch(this._getErrback());
+						return this.content;						
+					},
+					_async_call: function(func_name, params, data){
+						var response = this.ressource[func_name](params, data);
+						response.$promise.then(this._getCallback(true));
+						response.$promise.catch(this._getErrback(true));
+						return this.content;
 					},
 					query: function(params){
-						var that = this;
-						this.contentIsArray = true;
-						this.setContent(this.ressource.query(params));
-						this.$promise.then(function(data){
-							if(data["error"]) {
-								that.content["error"] = {statusText: error, status: -2};
-							}else if(!data["objects"]){
-								that.content["error"] = {statusText: "Invalid response", status: -3};
-							}else{			
-								var objects = data["objects"];				
-								that.contentById = {};
-								for (var i = objects.length - 1; i >= 0; i--) {
-									that.contentById[objects[i].id] = objects[i];
-								};
-							}
-						});
-						return this.content;
+						return this._call("query", params);
 					},
 					get: function(params){
-						var that = this;
-						this.setContent(this.ressource.get(params));
-						this.$promise.then(function(data){
-							that.contentById = {}
-							that.contentById[data.id] = data;
-						});
-						return this.content;
+						return this._call("get", params);
 					},
-					update: function(content){
-						var objectToUpdate = null;
-						if(this.content !== null){
-							if(this.contentById.hasOwnProperty(content.id)){
-								updateObject(content, this.contentById[content.id]);
-							}else if(this.contentIsArray){
-								this.addObject(content);
+					save: function(params, data){
+						return this._async_call("save", params, data);
+					},
+					delete: function(params){
+						return this._async_call("delete", params);
+					},
+					update: function(object){
+						if(angular.isUndefined(object)){
+							return object;
+						}
+						if(object.id){
+							if(this.content.object.id && this.content.object.id == object.id){
+								updateObject(object, this.content.object);
+							}
+							if(this.contentById.hasOwnProperty(object.id)){
+								updateObject(object, this.contentById[object.id]);
+							}else{
+								this.contentById[object.id] = object;
+								this.content.list.push(object);
 							}
 						}
 					}
