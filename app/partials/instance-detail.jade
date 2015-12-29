@@ -1,20 +1,18 @@
-h1 Tor Instance
-button.btn.btn-primary(ng-click="go('circuit-list')") Circuits
-button.btn.btn-primary(ng-click="go('stream-list')") Streams
-
-h2 Connection
-p Port {{instance.port}}
-p Host {{instance.host}}
-label
-	| Hide default values
-	input(type="checkbox", ng-model="hide_default", ng-init="hide_default=true")
-h2 Configuration
-table.table.table-striped.configuration
-	thead
-		tr
-			th Name
-			th Value
-	tbody
-		tr(ng-repeat="config in instance.configuration", ng-if="!hide_default || config.value != 'DEFAULT'")
-			td {{config.name}}
-			td {{config.value}}
+include includes/error
+div(ng-if="!content.error")
+  h1 Tor Instance
+  h2 Connection &nbsp;
+    span(ng-if="instance.connected === true").label.label-pill.label-success Succeeded
+    span(ng-if="instance.connected === false").label.label-pill.label-danger Failed
+  .row(ng-if="instance.connection_error")
+    .col-sm-1
+      strong Error
+    .col-sm-11 {{instance.connection_error.message}}
+  .row
+    .col-sm-1
+      strong Port
+    .col-sm-11 {{instance.port}}
+  .row
+    .col-sm-1
+      strong Host
+    .col-sm-11 {{instance.host}}

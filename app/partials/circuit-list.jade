@@ -1,8 +1,7 @@
-.errorpage(ng-if="circuits.error", class="{{circuits.error.status}}")
-  h1 Router Error: {{circuits.error.status}}
-  h2 {{circuits.error.statusText}}
-div(ng-if="!circuits.error")
+div(ng-if="!content.error")
   h1 Circuits
+  label Show closed circuits
+    input(type="checkbox", ng-model="show_closed", ng-init="show_closed=false")
   .table-responsive
     table.table.table-striped
       thead
@@ -12,7 +11,7 @@ div(ng-if="!circuits.error")
         th.hidden-md-down Last Node IP
         th Actions
       tbody
-        tr(ng-repeat="circuit in circuits.objects")
+        tr(ng-repeat="circuit in circuits", ng-if="circuit.state != 'CLOSED' || show_closed")
           td
             button.btn.btn-link(ng-click="circuitDetails(circuit)", title="Show the details of this ciruit.") {{circuit.id}}
           td
@@ -22,9 +21,9 @@ div(ng-if="!circuits.error")
               .router(ng-repeat="router in circuit.path")
                 button.btn.btn-link(ng-click="routerDetails(router)", title="IP: {{router.ip}} (Click to see more information.)")
                   | {{router.name}} &nbsp;
-                  span.flag-icon(class="flag-icon-{{router.location.cc | lowercase}}")
+                  span.flag-icon(aria-hidden="true", class="flag-icon-{{router.location.country | lowercase}}", title="{{router.location.country_name}}")
           td.hidden-md-down
-            {{circuit.path[circuit.path.length-1].ip}}
+            | {{circuit.path[circuit.path.length-1].ip}}
           td
             button.btn.btn-danger(ng-if="circuit.state == 'BUILT'", ng-click="deleteCircuit(circuit)")
               span.glyphicon.glyphicon-remove-circle(aria-hidden="true")

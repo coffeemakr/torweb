@@ -1,7 +1,5 @@
-.errorpage(ng-if="circuit.error", class="{{circuit.error.status}}")
-  h1 Router Error: {{circuit.error.status}}
-  h2 {{circuit.error.statusText}}
-div(ng-if="!circuit.error")
+include includes/error
+div(ng-if="!content.error")
   h1  Circuit: {{circuit.id}}
   .row
     .col-lg-4
@@ -17,7 +15,7 @@ div(ng-if="!circuit.error")
     .col-lg-4
       .property
         .title Created on
-        .value {{ circuit.time_created| date:"medium"}}
+        .value {{ circuit.time_created | date:"medium"}}
 
   h2 Nodes
   .table-responsive

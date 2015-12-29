@@ -5,41 +5,29 @@ var torstatControllers = angular.module('torstatControllers',[]);
 
 torstatControllers
 	.controller('TorRessourceCtrl', 
-	   			['TorstatWebsocket', '$scope', 'MenuHandler', '$location', '$routeParams', '$TorResource', '$route', 'OnionooRouter', 'ReverseDNS',
-		function(TorstatWebsocket,    $scope,   MenuHandler,   $location,   $routeParams,   $TorResource,   $route,   OnionooRouter,   ReverseDNS) {
+	   			['TorstatWebsocket', '$scope', '$rootScope', 'MenuHandler', '$location', '$routeParams', '$TorResource', '$route', 'OnionooRouter', 'ReverseDNS',
+		function(TorstatWebsocket,    $scope,   $rootScope,   MenuHandler,   $location,   $routeParams,   $TorResource,   $route,   OnionooRouter,   ReverseDNS) {
 			MenuHandler.setCurrent($route.current.$$route.originalPath);
 			MenuHandler.setArgs($routeParams);
-			
+
 			function UpdateView(){
 				var view = MenuHandler.getCurrent().getTemplateName();
-				var ressource = $TorResource(view.split('-')[0]);
-				switch(view){
-					case 'instance-list':
-						$scope.instances = ressource.query($routeParams);
+				var ressource_name = view.split('-')[0];
+				var ressource = $TorResource(ressource_name);
+				ressource.clear();
+				$scope.content = ressource.content;
+				switch(view.split('-')[1]){
+					case 'detail':
+						console.log(ressource_name);
+						$scope.content = ressource.get($routeParams);
+						$scope[ressource_name] = $scope.content.object;
 						break;
-					case 'instance-detail':
-						$scope.instance = ressource.get($routeParams);
-						break;
-					case 'circuit-detail':
-						$scope.circuit = ressource.get($routeParams);
-						break;
-					case 'circuit-list':
-						$scope.circuits = ressource.query($routeParams);
-						break;
-					case 'router-detail':
-						$scope.router = ressource.get($routeParams);
-						break;
-					case 'router-list':
-						$scope.routers = ressource.query($routeParams);
-						break;
-					case 'stream-detail':
-						$scope.stream = ressource.get($routeParams);
-						break;
-					case 'stream-list':
-						$scope.streams = ressource.query($routeParams);
+					case 'list':
+						$scope.content = ressource.get($routeParams);
+						$scope[ressource_name + 's'] = $scope.content.list;
 						break;
 					default:
-						console.error("view not implemented: ", view);		
+						console.log("unknown view");
 				}
 			}
 			UpdateView();
@@ -50,17 +38,24 @@ torstatControllers
 			$scope.circuitDetails = function(circuit){
 				$location.path(MenuHandler.getUrlForTemplateName('circuit-detail', {instanceId: $routeParams.instanceId, circuitId: circuit.id}));
 			};
-			$scope.go = function(templateName){
+			$rootScope.route = $routeParams;
+			$rootScope.go = function(templateName){
 				$location.path(MenuHandler.getUrlForTemplateName(templateName, $routeParams));
 			}
 			$scope.routerDetails = function(router){
 				$location.path(MenuHandler.getUrlForTemplateName('router-detail', {instanceId: $routeParams.instanceId, routerId: router.id}));
 			};
 			$scope.streamDetails = function(stream){
-				$location.path(MenuHandler.getUrlForTemplateName('stream-detail', {instanceId: $routeParams.instanceId, streamId: stream.id}).url);
+				$location.path(MenuHandler.getUrlForTemplateName('stream-detail', {instanceId: $routeParams.instanceId, streamId: stream.id}));
 			};
 			$scope.deleteStream = function(stream){
 				$TorResource('stream').delete({streamId: stream.id, instanceId: $routeParams.instanceId});
+			};
+			$scope.configDetails = function(config){
+				$location.path(MenuHandler.getUrlForTemplateName('config-detail', {instanceId: $routeParams.instanceId, configId: config.name}));
+			};
+			$scope.updateConfig = function(config){
+				$TorResource('config').save({instanceId: $routeParams.instanceId, configId: config.name}, {value: config.value});
 			};
 			$scope.reverseDNS = function(router){
 				ReverseDNS.get({ip: router.ip}, function(data){
@@ -73,10 +68,8 @@ torstatControllers
 				OnionooRouter.get({routerId: $routeParams.routerId}, function(data){
 					data.$promise.then(function(data){
 						var router = data.relays[0];
-						var attributes = ['platform', 'dir_address']
-						for (var i = 0; i < attributes.length; i++){
-							$scope.router[attributes[i]] = router[attributes[i]];
-						}
+						router.id = router.fingerprint;
+						$TorResource('router').update(router);
 					});
 				});
 			};
