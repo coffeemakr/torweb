@@ -6,7 +6,7 @@ import re
 __all__ = ('ConfigurationRoot', 'Configuration')
 
 
-ERROR_CONFIGURATION_NOT_READY = {'error': response.error("Configuration was not set.", "Not ready")}
+ERR_CONFIG_NREADY = response.error("Not ready", "Configuration was not set.")
 
 
 class ConfigurationRoot(resource.Resource):
@@ -19,15 +19,17 @@ class ConfigurationRoot(resource.Resource):
 
     def getChild(self, name, request):
         if self.configuration is None:
-            return resource.NoResource("Configuration not ready.")
+            return response.JsonError("State Error",
+                                      "Configuration not ready.")
         if name in self.configuration.config:
             return Configuration(name=name, configuration=self.configuration)
-        return resource.NoResource("Configuration doesn't exist.")
+        return response.JsonError("State Error",
+                                  "Configuration doesn't exist.")
 
     @response.json
     def render_GET(self, request):
         if self.configuration is None:
-            return ERROR_CONFIGURATION_NOT_READY
+            return ERR_CONFIG_NREADY
         entries = []
         for name, value in self.configuration.config.items():
             entries.append({"name": name, "value": value})
@@ -67,23 +69,21 @@ class Configuration(resource.Resource):
     @request.json
     def render_POST(self, request):
         if 'value' not in request.json_content:
-            return {'error': response.error(name="Invalid Request", 
-                                            message="You sent an invalid request.")}
+            return response.error("Invalid Request",
+                                "You sent an invalid request.")
         if self.configuration is None:
-            return ERROR_CONFIGURATION_NOT_READY
+            return ERR_CONFIG_NREADY
         value = request.json_content['value']
         if type(value) is bool:
             value = int(value)
             pass
-        original_value = self.configuration.config[self.name] 
+        original_value = self.configuration.config[self.name]
         setattr(self.configuration, self.name, value)
         d = self.configuration.save()
 
         def on_error(error):
             self.configuration.config[self.name] = original_value
-            request.write(json.dumps(
-                {'error': response.error_tb(error)}
-            ).encode('utf-8'))
+            request.write(json.dumps(response.error_tb(error)).encode('utf-8'))
             request.finish()
 
         def on_success(*args):

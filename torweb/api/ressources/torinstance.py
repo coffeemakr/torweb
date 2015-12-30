@@ -61,7 +61,7 @@ class TorInstance(resource.Resource):
         self.streamRoot = StreamRoot()
         self.configRoot = ConfigurationRoot()
         self.dnsRoot = DNSRoot(resolver=None)
-        
+
         self.putChild('circuit', self.circuitRoot)
         self.putChild('router', self.routerRoot)
         self.putChild('stream', self.streamRoot)
@@ -74,9 +74,11 @@ class TorInstance(resource.Resource):
         if path == 'dns':
             port = self.dns_port
             if port is None:
-                return response.JsonError(message="Tor instance has not DNSPort.", name="No DNS")
+                msg = "Tor instance has not DNSPort."
+                return response.JsonError(message=msg, name="No DNS")
             else:
-                self.dnsRoot.config.resolver = client.Resolver(servers=[(self.host, port)])
+                self.dnsRoot.config.resolver = client.Resolver(
+                    servers=[(self.host, port)])
         return self.dnsRoot
 
     def connect(self, port, host='127.0.0.1'):
@@ -199,7 +201,7 @@ class TorInstance(resource.Resource):
     @response.json
     def render_GET(self, request):
         return JsonTorInstance(self).as_dict()
-    
+
     def create(self, config):
         if getattr(config, "ControlPort", 0) == 0:
             raise ValueError("ControlPort has to be set to a non-zero value.")
@@ -208,6 +210,7 @@ class TorInstance(resource.Resource):
         d = txtorcon.launch_tor(config=config, reactor=reactor)
         d.addCallback(self._process_success)
         d.addErrback(self._process_failed)
+
 
 class TorInstances(resource.Resource):
 

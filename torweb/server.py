@@ -31,7 +31,7 @@ class ApiRessource(resource.Resource):
     def __init__(self, config):
         resource.Resource.__init__(self)
         resolver = client.Resolver(servers=[('8.8.8.8', 53)])
-        #self.putChild('dns', DNSRoot(resolver=resolver))
+        # self.putChild('dns', DNSRoot(resolver=resolver))
         self.putChild('tor', TorInstances(config))
 
 

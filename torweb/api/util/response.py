@@ -6,6 +6,7 @@ from twisted.web import server
 
 from twisted.web import resource
 
+
 def json(func):
     def new_func(*args):
         request = args[-1]
@@ -19,17 +20,13 @@ def json(func):
     return new_func
 
 
-def error_tb(tb):
-    return {
-        'message': tb.getErrorMessage(),
-        'name': tb.type.__name__
-    }
+def error(name, message):
+    return {'error': {'message': message, 'name': name}}
 
-def error(message, name=None):
-    return {
-        'message': message,
-        'name': name
-    }
+
+def error_tb(tb):
+    return error(tb.type.__name__, tb.getErrorMessage())
+
 
 def send_json(response, data):
     data = j.dumps(data).encode('utf8')
@@ -38,7 +35,7 @@ def send_json(response, data):
 
 
 class JsonError(resource.Resource):
-    
+
     message = None
     name = None
 
@@ -51,12 +48,7 @@ class JsonError(resource.Resource):
 
     @json
     def render_GET(self, request):
-        return {'error':
-            {
-                'name': self.name,
-                'message': self.message
-            }
-        }
+        return error(self.name, self.message)
 
     def getChild(self, child, request):
         return self

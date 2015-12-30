@@ -117,7 +117,7 @@ class DNSLookup(DNSResource):
 
     def _render_error(self, error, request):
         error.printTraceback()
-        result = {'error': response.error_tb(error)}
+        result = response.error_tb(error)
         response.send_json(request, result)
 
     @response.json
