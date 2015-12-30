@@ -425,8 +425,16 @@ torstatServices
 	.factory('OnionooRouter', ['$resource', 'onionooURL', function($resource, onionooURL){
 		return $resource(onionooURL + "details?lookup=:routerId");
 	}])
-	.factory('ReverseDNS', ['$resource', 'baseURL', function($resource, baseURL) {
-	    return $resource(baseURL + 'dns/reverse/:ip');
+	.factory('DNSLookup', ['$resource', 'baseURL', function($resource, baseURL){
+		var typeResources = {};
+		return function(type){
+			if(!typeResources.hasOwnProperty(type)) {
+				var resource = $resource(baseURL + 'tor/:instanceId/dns/' + type + '/:name');
+				typeResources[type] = resource;
+			}
+			return typeResources[type];
+		}
+
 	}])
 	.factory('LogService', function(){
 		if(GlobalLogService === null){

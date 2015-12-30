@@ -1,5 +1,7 @@
 div(ng-repeat="error in content.async_errors")
-	.alert.alert-danger(role="alert") {{error.message}}
+	.alert.alert-danger(role="alert") 
+		strong(ng-if="error.name") {{error.name}}:&nbsp;
+		| {{error.message}}
 .errorpage(ng-if="content.error")
 	h1(ng-if="content.error.name") Error: {{content.error.name}}
 	h1(ng-if="!content.error.name") Error

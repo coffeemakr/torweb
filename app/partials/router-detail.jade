@@ -19,6 +19,8 @@ div(ng-if="!content.error")
       .property(ng-if="router.hostname")
         .title Hostname
         .value {{router.hostname}}
+          span(ng-if="router.hostname_verified") &nbsp;
+            span.label.label-pill.label-success(title="Hostname resolved to the same IP address.") OK!
       .property(ng-if="router.dir_address")
         .title Dir Address
         .value {{router.dir_address}}
@@ -42,5 +44,7 @@ div(ng-if="!content.error")
         | {{router.platform}}
       .property
         .title Country
-        .value {{router.location.country}}&nbsp;
+        .value
+          span(ng-if="!router.location.country_name") {{router.location.country}}&nbsp;
+          span(ng-if="router.location.country_name") {{router.location.country_name}}&nbsp;
           span.flag-icon(class="flag-icon-{{router.location.country | lowercase}}")

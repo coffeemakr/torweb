@@ -6,7 +6,7 @@ import re
 __all__ = ('ConfigurationRoot', 'Configuration')
 
 
-ERROR_CONFIGURATION_NOT_READY = {'error': 'Configuration not ready'}
+ERROR_CONFIGURATION_NOT_READY = {'error': response.error("Configuration was not set.", "Not ready")}
 
 
 class ConfigurationRoot(resource.Resource):
@@ -67,24 +67,22 @@ class Configuration(resource.Resource):
     @request.json
     def render_POST(self, request):
         if 'value' not in request.json_content:
-            return {'error': 'Invalid request.'}
+            return {'error': response.error(name="Invalid Request", 
+                                            message="You sent an invalid request.")}
         if self.configuration is None:
             return ERROR_CONFIGURATION_NOT_READY
         value = request.json_content['value']
         if type(value) is bool:
-            # value = int(value)
+            value = int(value)
             pass
+        original_value = self.configuration.config[self.name] 
         setattr(self.configuration, self.name, value)
         d = self.configuration.save()
 
         def on_error(error):
+            self.configuration.config[self.name] = original_value
             request.write(json.dumps(
-                {'error':
-                    {
-                        'message': error.getErrorMessage(),
-                        'name': error.type.__name__
-                    }
-                 }
+                {'error': response.error_tb(error)}
             ).encode('utf-8'))
             request.finish()
 

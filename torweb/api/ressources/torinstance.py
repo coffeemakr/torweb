@@ -4,16 +4,22 @@ from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
 from twisted.internet.endpoints import TCP4ClientEndpoint
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 from autobahn.twisted.resource import WebSocketResource
 import txtorcon
 
 from torweb.api.json import JsonTorInstanceMinimal, JsonTorInstance
-from torweb.api.util import response
-from torweb.api.ressources import CircuitRoot, RouterRoot
-from torweb.api.ressources import StreamRoot, ConfigurationRoot
+from torweb.api.util import response, request
+from .circuit import CircuitRoot
+from .router import RouterRoot
+from .configuration import ConfigurationRoot
+from .stream import StreamRoot
+from .lookup import DNSRoot
+from twisted.names import client
 from torweb.api import websocket
 from torweb.error import ConfigurationError
+
+import tempfile
 
 __all__ = ('TorInstances', 'TorInstance')
 
@@ -34,38 +40,62 @@ class TorInstance(resource.Resource):
     #: Error set if the connection failed.
     connection_error = None
 
-    def __init__(self, port, host='127.0.0.1', password=None):
+    #: Set to true if the instance is connected to the running tor process
+    connected = False
+
+    def __init__(self, password=None):
         resource.Resource.__init__(self)
 
         self._password = None
         self._id = None
         self._configuration = None
 
-        self.host = host
-        self.port = port
+        self.host = None
+        self.port = None
 
         if password is not None:
             self.set_password(password)
-
-        self.endpoint = TCP4ClientEndpoint(reactor, self.host, port)
-
-        d = self.endpoint.connect(txtorcon.TorProtocolFactory(
-            password_function=self._password_callback))
-        d.addCallback(self._build_state)
-        d.addErrback(self._connection_failed)
 
         self.circuitRoot = CircuitRoot()
         self.routerRoot = RouterRoot()
         self.streamRoot = StreamRoot()
         self.configRoot = ConfigurationRoot()
+        self.dnsRoot = DNSRoot(resolver=None)
+        
         self.putChild('circuit', self.circuitRoot)
         self.putChild('router', self.routerRoot)
         self.putChild('stream', self.streamRoot)
         self.putChild('config', self.configRoot)
-
         self.websocket_factory = websocket.TorWebSocketServerFactory()
         self.websocket = WebSocketResource(self.websocket_factory)
         self.putChild('websocket', self.websocket)
+
+    def getChild(self, path, request):
+        if path == 'dns':
+            port = self.dns_port
+            if port is None:
+                return response.JsonError(message="Tor instance has not DNSPort.", name="No DNS")
+            else:
+                self.dnsRoot.config.resolver = client.Resolver(servers=[(self.host, port)])
+        return self.dnsRoot
+
+    def connect(self, port, host='127.0.0.1'):
+        self.host = host
+        self.port = port
+        self.endpoint = TCP4ClientEndpoint(reactor, self.host, self.port)
+        d = self.endpoint.connect(txtorcon.TorProtocolFactory(
+            password_function=self._password_callback))
+        d.addCallback(self._build_state)
+        d.addErrback(self._connection_failed)
+
+    def _process_success(self, process):
+        print("Process sucess")
+        self._build_state(process.tor_protocol)
+
+    def _process_failed(self, error):
+        self.connected = False
+        self.connection_error = error
+        print("Spawning failed: %s" % error.getBriefTraceback())
 
     def _connection_failed(self, error):
         self.connected = False
@@ -96,7 +126,6 @@ class TorInstance(resource.Resource):
         return proto
 
     def _password_callback(self):
-        print('returned password')
         return self._password
 
     def set_password(self, password):
@@ -105,7 +134,27 @@ class TorInstance(resource.Resource):
     def get_password(self):
         return self._password
 
-    password = property(get_password, set_password)
+    password = property(get_password,
+                        set_password)
+
+    @property
+    def dns_port(self):
+        if self._configuration is None:
+            return None
+        if 'DNSPort' not in self._configuration.config:
+            return None
+        ports = self._configuration.config['DNSPort']
+        try:
+            port = ports[0]
+        except TypeError, IndexError:
+            print("DNSPort has invalid type.")
+            return None
+        if port != "DEFAULT":
+            try:
+                return int(port)
+            except ValueError as why:
+                print("DNSPort is no integer: %s" % why)
+        return None
 
     @property
     def has_state(self):
@@ -150,7 +199,15 @@ class TorInstance(resource.Resource):
     @response.json
     def render_GET(self, request):
         return JsonTorInstance(self).as_dict()
-
+    
+    def create(self, config):
+        if getattr(config, "ControlPort", 0) == 0:
+            raise ValueError("ControlPort has to be set to a non-zero value.")
+        self.port = config.ControlPort
+        self.host = "127.0.0.1"
+        d = txtorcon.launch_tor(config=config, reactor=reactor)
+        d.addCallback(self._process_success)
+        d.addErrback(self._process_failed)
 
 class TorInstances(resource.Resource):
 
@@ -171,18 +228,20 @@ class TorInstances(resource.Resource):
             raise ConfigurationError("Port not defined.")
         if 'host' not in config:
             raise ConfigurationError("Host not defined.")
-
-        arguments = ('port', 'host', 'password')
-        kwargs = {}
-        for keyword in arguments:
-            if keyword in config:
-                kwargs[keyword] = config[keyword]
-
         try:
-            kwargs['port'] = int(kwargs['port'])
+            port = int(config['port'])
         except ValueError:
             raise ConfigurationError("Port must be an integer.")
-        return TorInstance(**kwargs)
+
+        host = config['host']
+
+        password = None
+        if 'password' in config:
+            password = config['password']
+
+        instance = TorInstance(password=password)
+        instance.connect(port=port, host=host)
+        return instance
 
     def getChild(self, torInstance, request):
         '''
@@ -198,3 +257,15 @@ class TorInstances(resource.Resource):
         for instance in self.instances.values():
             result.append(JsonTorInstanceMinimal(instance).as_dict())
         return {'objects': result}
+
+    @response.json
+    @request.json
+    def render_PUT(self, request):
+        instance = TorInstance()
+        self.instances[instance.id] = instance
+        config = txtorcon.TorConfig()
+        config.ORPort = 0
+        config.SocksPort = 9999
+        config.ControlPort = 9090
+        instance.create(config)
+        return {}

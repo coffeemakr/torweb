@@ -9,7 +9,7 @@ __all__ = ('JsonTorInstance', 'JsonTorInstanceMinimal')
 
 class JsonTorInstance(JsonObject):
     attributes = ('id', 'connected', 'host',
-                  'port', 'connection_error', 'configuration')
+                  'port', 'connection_error', 'configuration', 'dns_port')
 
     def _set_json_error(self, d):
         if d['connection_error'] is not None:

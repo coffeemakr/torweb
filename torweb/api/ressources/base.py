@@ -62,7 +62,8 @@ class TorResource(resource.Resource):
             for item in self.get_list():
                 items.append(self.json_list_class(item).as_dict())
             result['objects'] = items
-        result['error'] = error
+        else:
+            result['error'] = {'message': error, 'name': 'Not ready'}
         return result
 
     def getChild(self, ident, request):

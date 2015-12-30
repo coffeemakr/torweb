@@ -28,7 +28,7 @@ class CircuitRoot(TorResource):
         ident = int(ident)
         if ident not in self.torstate.circuits:
             return None
-        return self.torstate.circuits[ident]
+        return self.torstate.find_circuit(ident)
 
     def get_list(self):
         return self.torstate.circuits.values()

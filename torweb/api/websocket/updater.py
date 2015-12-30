@@ -51,17 +51,25 @@ class MyServerProtocol(WebSocketServerProtocol):
         self.sendMessage(json.dumps(payload).encode('utf8'))
 
     def sendCircuitEvent(self, action, circuit):
+        json_circuit = JsonCircuit(circuit).as_dict()
+        
         self.sendEvent(EVENT_TYPE_CIRCUIT,
                        {
                            'action': action,
-                           'circuit': JsonCircuit(circuit).as_dict()
+                           'circuit': json_circuit
                        })
 
     def sendStreamEvent(self, action, stream):
+        json_stream = JsonStream(stream).as_dict()
+
+        if 'circuit' in json_stream and json_stream['circuit'] == None:
+            # Don't send removed circuit
+            del json_stream['circuit']
+
         self.sendEvent(EVENT_TYPE_STREAM,
                        {
                            'action': action,
-                           'stream': JsonStream(stream).as_dict()
+                           'stream': json_stream
                        })
 
     def circuit_new(self, circuit):

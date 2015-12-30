@@ -3,8 +3,8 @@ from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import server, resource, static, util
 from twisted.internet import reactor
-from torweb.api.ressources import DNSRoot, TorInstances
-
+from torweb.api.ressources import TorInstances
+from twisted.names import client
 import os
 import json
 
@@ -30,7 +30,8 @@ class ApiRessource(resource.Resource):
 
     def __init__(self, config):
         resource.Resource.__init__(self)
-        self.putChild('dns', DNSRoot())
+        resolver = client.Resolver(servers=[('8.8.8.8', 53)])
+        #self.putChild('dns', DNSRoot(resolver=resolver))
         self.putChild('tor', TorInstances(config))
 
 
