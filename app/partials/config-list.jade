@@ -11,9 +11,9 @@ div(ng-if="!content.error")
           th Name
           th Value
       tbody
-        tr(ng-repeat="config in configs | orderBy:'name'", ng-if="show_default || config.value != 'DEFAULT'")
+        tr(ng-repeat="config in configs | orderBy:'id'", ng-if="show_default || config.value != 'DEFAULT'")
           td
-            button.btn.btn-link(ng-click="configDetails(config)") {{config.name}}
+            button.btn.btn-link(ng-click="configDetails(config)") {{config.id}}
           td {{config.value}}
   p(ng-if="!configs")
     i Configuration is not available.

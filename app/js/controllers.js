@@ -51,10 +51,10 @@ torstatControllers
 				$TorResource('stream').delete({streamId: stream.id, instanceId: $routeParams.instanceId});
 			};
 			$scope.configDetails = function(config){
-				$location.path(MenuHandler.getUrlForTemplateName('config-detail', {instanceId: $routeParams.instanceId, configId: config.name}));
+				$location.path(MenuHandler.getUrlForTemplateName('config-detail', {instanceId: $routeParams.instanceId, configId: config.id}));
 			};
 			$scope.updateConfig = function(config){
-				$TorResource('config').save({instanceId: $routeParams.instanceId, configId: config.name}, {value: config.value});
+				$TorResource('config').save({instanceId: $routeParams.instanceId, configId: config.id}, {value: config.value});
 			};
 
 			$scope.guessHostname = function(ip, streams){
