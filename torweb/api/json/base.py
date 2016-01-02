@@ -18,19 +18,20 @@ IPADDRESSES = (ipaddress.IPv4Address,
 
 
 class JsonObject(object):
+
     rename = ()
 
-    def __init__(self, txtor):
-        self.txtor = txtor
+    def __init__(self, obj):
+        self.object = obj
 
     def as_dict(self):
         result = {}
-        obj = self.txtor
         for attr in self.attributes:
-            value = getattr(obj, attr)
+            value = getattr(self.object, attr)
             if isinstance(value, datetime.datetime):
                 value = value.isoformat()
             elif isinstance(value, txtorcon.util.NetLocation):
+                # TODO: Use existing information in value
                 value = {'country': value.countrycode}
                 value['country_name'] = geoip.get_country_name(value[
                                                                'country'])

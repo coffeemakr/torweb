@@ -3,3 +3,4 @@ flakes
 coverage
 pep8
 setuptools>=0.8.0
+pylint

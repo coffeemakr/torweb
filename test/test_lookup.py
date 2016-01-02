@@ -3,51 +3,52 @@
 from twisted.trial import unittest
 
 from torweb.api.ressources import lookup
+from twisted.internet import defer
 from twisted.web.test.test_web import DummyRequest
 from .util import render
-
+from twisted.names import client
 import json
 
-class TestLookup(unittest.TestCase):
-	def test_get_reverse_dns(self):
-		request = DummyRequest([])
-		root = lookup.DNSRoot()
-		reverse_root = root.getChildWithDefault('reverse', request)
-		self.assertIsInstance(reverse_root, lookup.ReverseDNSRoot)
-		reverse = reverse_root.getChildWithDefault('localhost', reverse_root)
-		self.assertIsInstance(reverse, lookup.ReverseDNS)
 
-	def test_reverse_dns_google(self):
-		reverse = lookup.ReverseDNS('8.8.8.8')
-		request = DummyRequest([])
-		d = render(reverse, request)
-		def rendered(_):
-			payload = ''.join(request.written)
-			payload = json.loads(payload.decode('utf-8'))
-			self.assertIsInstance(payload, dict)
-			self.assertTrue('ips' in payload)
-			self.assertTrue('host' in payload)
-			self.assertTrue('alias' in payload)
-			self.assertEquals(payload['host'], 'google-public-dns-a.google.com')
-			self.assertTrue('8.8.8.8' in payload['ips'])
-		d.addCallback(rendered)
+class TestReverseLookup(unittest.TestCase):
 
-	def test_reverse_dns_unexisting_dns(self):
-		reverse = lookup.ReverseDNS('1.1.1.1')
-		request = DummyRequest([])
-		d = render(reverse, request)
-		def rendered(_):
-			payload = ''.join(request.written)
-			payload = json.loads(payload.decode('utf-8'))
-			self.assertIsInstance(payload, dict)
-			self.assertTrue('error' in payload)
-			self.assertTrue(type(payload['error']) in (str, unicode))
-			self.assertTrue('ips' in payload)
-			self.assertTrue('host' in payload)
-			self.assertTrue('alias' in payload)
-			self.assertEquals(payload['host'], None)
-			self.assertEquals(payload['alias'], [])
-			self.assertTrue('1.1.1.1' in payload['ips'])
-		d.addCallback(rendered)
-		d.addErrback(self.fail)
+    def setUp(self):
+        self.config = lookup.DNSConfig()
+        resolver = client.Resolver(servers=[('8.8.8.8', 53)])
+        self.config.resolver = resolver
 
+    @defer.inlineCallbacks
+    def test_get_reverse_dns(self):
+        request = DummyRequest([])
+        root = lookup.DNSRoot(config=self.config)
+        reverse_root = yield root.getChildWithDefault('reverse', request)
+        self.assertIsInstance(reverse_root, lookup.ReverseDNS)
+        reverse = yield reverse_root.getChildWithDefault('localhost', reverse_root)
+        self.assertIsInstance(reverse, lookup.DNSLookup)
+
+    @defer.inlineCallbacks
+    def test_reverse_dns_google(self):
+        request = DummyRequest([])
+        reverse = yield lookup.ReverseDNS(config=self.config).getChildWithDefault('8.8.8.8', request)
+        result = yield render(reverse, request)
+        payload = ''.join(request.written)
+        payload = json.loads(payload.decode('utf-8'))
+        self.assertIsInstance(payload, dict)
+        self.assertTrue('objects' in payload)
+        for obj in payload['objects']:
+            self.assertEquals(
+                obj['name'], 'google-public-dns-a.google.com')
+
+    @defer.inlineCallbacks
+    def test_reverse_dns_unexisting_dns(self):
+        request = DummyRequest([])
+        reverse = lookup.ReverseDNS(
+            config=self.config).getChildWithDefault('1.1.1.1', request)
+        d = yield render(reverse, request)
+
+        payload = ''.join(request.written)
+        payload = json.loads(payload.decode('utf-8'))
+        self.assertIsInstance(payload, dict)
+        self.assertTrue('error' in payload)
+        self.assertTrue(type(payload['error']) == dict)
+    

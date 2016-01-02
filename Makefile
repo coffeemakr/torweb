@@ -21,8 +21,10 @@ PIP_DEV_SOURCE:=dev-requirements.txt
 PYTHON_PACKAGES:=$(VENV_DIR)/.$(PIP_SOURCE)
 PYTHON_DEV_PACKAGES:=$(VENV_DIR)/.$(PIP_DEV_SOURCE)
 
+PYLINT:=python -m pylint 
 
 PIP := pip
+
 
 ifndef PRODUCTION
 	JADE_ARGS=--pretty
@@ -124,6 +126,17 @@ precommit_test: pep8
 pep8: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
 	pep8 $^
 
+.PHONY: pylint
+pylint: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
+	$(PYLINT) $(PYPACKAGE)
+	$(PYLINT) $(PYPACKAGE)
+	$(PYLINT) $(PYPACKAGE)
+	$(PYLINT) $(PYPACKAGE)
+	$(PYLINT) $(PYPACKAGE)
+	$(PYLINT) $(PYPACKAGE)
+	$(PYLINT) $(PYPACKAGE)
+	$(PYLINT) $(PYPACKAGE)
+	
 .PHONY: pyflakes
 pyflakes: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
 	pyflakes $(PYPACKAGE)

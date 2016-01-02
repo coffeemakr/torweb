@@ -1,52 +1,26 @@
+# -*- coding: utf-8 -*-
+
 from twisted.web import resource
 from torweb.api.util import response, request
 import json
 from twisted.web import server
 import re
-__all__ = ('ConfigurationRoot', 'Configuration')
+from .instanceconfig import TorInstanceConfig
+from torweb.api.json.configuration import JsonConfig, JsonConfigMinimal
+from .base import TorResource, TorResourceDetail
 
+__all__ = ('ConfigurationRoot', 'Configuration')
 
 ERR_CONFIG_NREADY = response.error("Not ready", "Configuration was not set.")
 
 
-class ConfigurationRoot(resource.Resource):
+class ConfigObject(object):
 
-    configuration = None
-
-    def __init__(self, configuration=None):
-        resource.Resource.__init__(self)
-        self.configuration = configuration
-
-    def getChild(self, name, request):
-        if self.configuration is None:
-            return response.JsonError("State Error",
-                                      "Configuration not ready.")
-        if name in self.configuration.config:
-            return Configuration(name=name, configuration=self.configuration)
-        return response.JsonError("State Error",
-                                  "Configuration doesn't exist.")
-
-    @response.json
-    def render_GET(self, request):
-        if self.configuration is None:
-            return ERR_CONFIG_NREADY
-        entries = []
-        for name, value in self.configuration.config.items():
-            entries.append({"name": name, "value": value})
-        return {'objects': entries}
-
-
-class Configuration(resource.Resource):
-
-    def __init__(self, name, configuration=None):
-        if name not in configuration.config:
-            raise ValueError("Invalid name")
+    def __init__(self, name, config):
+        self.config = config
+        self.value = config.config[name]
         self.name = name
-        self.configuration = configuration
-
-    @property
-    def value(self):
-        return self.configuration.config[self.name]
+        self.id = name
 
     @property
     def type(self):
@@ -57,26 +31,22 @@ class Configuration(resource.Resource):
             name = 'str'
         return name
 
-    @response.json
-    def render_GET(self, request):
-        return {
-            'name': self.name,
-            'id': self.name,
-            'value': self.value,
-            'type': self.type}
+
+class Configuration(TorResourceDetail):
 
     @response.json
     @request.json
     def render_POST(self, request):
         if 'value' not in request.json_content:
             return response.error("Invalid Request",
-                                "You sent an invalid request.")
+                                  "You sent an invalid request.")
         if self.configuration is None:
             return ERR_CONFIG_NREADY
+
         value = request.json_content['value']
         if type(value) is bool:
             value = int(value)
-            pass
+
         original_value = self.configuration.config[self.name]
         setattr(self.configuration, self.name, value)
         d = self.configuration.save()
@@ -92,3 +62,32 @@ class Configuration(resource.Resource):
         d.addCallback(on_success)
         d.addErrback(on_error)
         return server.NOT_DONE_YET
+
+
+class ConfigurationRoot(TorResource):
+
+    detail_class = Configuration
+
+    json_list_class = JsonConfigMinimal
+
+    json_detail_class = JsonConfig
+
+    def get_list(self):
+        # TODO: check if configuration is ready
+        entries = []
+        for name, value in self._config.configuration.config.items():
+            obj = ConfigObject(name, self._config.configuration)
+            entries.append(obj)
+        return entries
+
+    def get_by_id(self, ident):
+        '''
+        Should return a single object.
+
+        :param ident: The identifier
+        '''
+        ident = str(ident)
+        if ident not in self._config.configuration.config:
+            return None
+        value = self._config.configuration.config[ident]
+        return ConfigObject(ident, self._config.configuration)

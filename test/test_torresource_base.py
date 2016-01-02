@@ -2,11 +2,13 @@
 
 from twisted.trial import unittest
 
-from torweb.api.ressources import base
+from torweb.api.ressources import base, instanceconfig
 from .util import DummyTorState, render
 from twisted.web.test.test_web import DummyRequest
 from twisted.web.resource import NoResource
+from twisted.internet.defer import inlineCallbacks
 import json
+
 
 class JsonClass(object):
 
@@ -16,17 +18,18 @@ class JsonClass(object):
     def as_dict(self):
         return {'object': self.object}
 
+
 class TorResourceWithJson(base.TorResource):
     json_list_class = JsonClass
     json_detail_class = JsonClass
-
-
 
 
 class TestTorResourceBase(unittest.TestCase):
 
     def setUp(self):
         self.torstate = DummyTorState()
+        self.instanceconfig = instanceconfig.TorInstanceConfig()
+        self.instanceconfig.state = self.torstate
 
     def test_set_torstate_afterwards(self):
         r = TorResourceWithJson()
@@ -37,7 +40,7 @@ class TestTorResourceBase(unittest.TestCase):
         self.assertEquals(r.get_torstate(), self.torstate)
 
     def test_set_torstate_in_constructor(self):
-        r = TorResourceWithJson(self.torstate)
+        r = TorResourceWithJson(self.instanceconfig)
         self.assertEquals(r.torstate, self.torstate)
         self.assertEquals(r.get_torstate(), self.torstate)
 
@@ -84,7 +87,7 @@ class TestTorResourceBase(unittest.TestCase):
                 return ident
 
         request = DummyRequest([''])
-        r = TorResourceWithJson1(self.torstate)
+        r = TorResourceWithJson1(self.instanceconfig)
         child = r.getChildWithDefault('1', request)
         self.assertIsInstance(child, base.TorResourceDetail)
 
@@ -102,7 +105,7 @@ class TestTorResourceBase(unittest.TestCase):
                 return ident
 
         request = DummyRequest([''])
-        r = TorResourceWithJson1(self.torstate)
+        r = TorResourceWithJson1(self.instanceconfig)
         child = r.getChildWithDefault('1', request)
         self.assertIsInstance(child, A)
 
@@ -113,18 +116,20 @@ class TestTorResourceBase(unittest.TestCase):
                 raise ValueError
 
         request = DummyRequest([''])
-        r = LocalTorResource(self.torstate)
+        r = LocalTorResource(self.instanceconfig)
         child = r.getChildWithDefault('1', request)
         self.assertIsInstance(child, NoResource)
 
     def test_empty_identifier(self):
         parent = self
+
         class LocalTorResource(TorResourceWithJson):
+
             def get_by_id(self, ident):
                 parent.fail("get_by_id called")
 
         request = DummyRequest([''])
-        r = LocalTorResource(self.torstate)
+        r = LocalTorResource(self.instanceconfig)
         child = r.getChildWithDefault('', request)
         self.assertIsInstance(child, NoResource)
 
@@ -136,10 +141,11 @@ class TestTorResourceBase(unittest.TestCase):
                 return None
 
         request = DummyRequest([''])
-        r = LocalTorResource(self.torstate)
+        r = LocalTorResource(self.instanceconfig)
         child = r.getChildWithDefault('1', request)
         self.assertIsInstance(child, NoResource)
 
+    @inlineCallbacks
     def test_render_list(self):
         class LocalTorResource(TorResourceWithJson):
 
@@ -148,24 +154,21 @@ class TestTorResourceBase(unittest.TestCase):
 
         request = DummyRequest([''])
         request.responseCode = 200
-        resource = LocalTorResource(self.torstate)
-        d = render(resource, request)
+        resource = LocalTorResource(self.instanceconfig)
+        d = yield render(resource, request)
 
-        def onresponse(_):
-            self.assertEquals(request.responseCode, 200,
-                              msg=request.responseCode)
-            payload = ''.join(request.written)
-            payload = json.loads(payload.decode('utf-8'))
-            self.assertIsInstance(payload, dict)
-            self.assertTrue('objects' in payload)
-            self.assertTrue(len(payload['objects']) == 100)
-            for i, item in enumerate(payload['objects']):
-                self.assertTrue('object' in item)
-                self.assertEquals(item['object'], i)
+        self.assertEquals(request.responseCode, 200,
+                          msg=request.responseCode)
+        payload = ''.join(request.written)
+        payload = json.loads(payload.decode('utf-8'))
+        self.assertIsInstance(payload, dict)
+        self.assertTrue('objects' in payload)
+        self.assertTrue(len(payload['objects']) == 100)
+        for i, item in enumerate(payload['objects']):
+            self.assertTrue('object' in item)
+            self.assertEquals(item['object'], i)
 
-        d.addCallback(onresponse)
-        d.addErrback(self.fail)
-
+    @inlineCallbacks
     def test_render_list_without_state(self):
 
         class LocalTorResource(TorResourceWithJson):
@@ -176,21 +179,18 @@ class TestTorResourceBase(unittest.TestCase):
         request = DummyRequest([''])
         request.responseCode = 200
         resource = LocalTorResource()
-        d = render(resource, request)
+        d = yield render(resource, request)
 
-        def onresponse(_):
-            self.assertEquals(request.responseCode, 200,
-                              msg=request.responseCode)
-            payload = ''.join(request.written)
-            payload = json.loads(payload.decode('utf-8'))
-            self.assertIsInstance(payload, dict)
-            self.assertTrue('error' in payload, msg=payload)
-            self.assertTrue('state' in payload['error'], msg=payload['error'])
-        d.addCallback(onresponse)
-        d.addErrback(self.fail)
+        self.assertEquals(request.responseCode, 200,
+                          msg=request.responseCode)
+        payload = ''.join(request.written)
+        payload = json.loads(payload.decode('utf-8'))
+        self.assertIsInstance(payload, dict)
+        self.assertTrue('error' in payload, msg=payload)
 
     def test_get_child_without_satte(self):
         class LocalTorResource(TorResourceWithJson):
+
             def get_by_id(self, ident):
                 raise RuntimeError("called")
 
@@ -200,7 +200,9 @@ class TestTorResourceBase(unittest.TestCase):
         child = resource.getChildWithDefault('1', request)
         self.assertIsInstance(child, NoResource)
 
+
 class TestTorResourceDetail(unittest.TestCase):
+
     def test_render(self):
         r = base.TorResourceDetail(1, JsonClass)
         request = DummyRequest([])

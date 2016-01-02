@@ -7,6 +7,9 @@ from twisted.web import server
 from twisted.names import dns
 import json
 
+from twisted.internet.base import DelayedCall
+DelayedCall.debug = True
+
 __all__ = ('DNSRoot', 'ReverseDNS')
 
 
@@ -20,6 +23,8 @@ class DNSResource(resource.Resource):
         resource.Resource.__init__(self)
         if config is None:
             config = DNSConfig()
+        elif not isinstance(config, DNSConfig):
+            raise TypeError("expected DNSConfig")
         if resolver is not None:
             config.resolver = resolver
         self.config = config

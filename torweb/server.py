@@ -1,15 +1,26 @@
 # -*- coding: utf-8 -*-
+'''
+Server
+'''
+
 from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import server, resource, static, util
 from twisted.internet import reactor
 from torweb.api.ressources import TorInstances
-from twisted.names import client
+
 import os
 import json
 
 
 class RootResource(resource.Resource):
+    '''
+    The root resource for all resources provided by the webserver.
+    These are the following:
+
+      * `/app`: The webpage for the user interface
+      * `/api`: The RESTful API.
+    '''
 
     def __init__(self, basedir):
         resource.Resource.__init__(self)
@@ -25,13 +36,14 @@ class RootResource(resource.Resource):
 
 class ApiRessource(resource.Resource):
     '''
-    RESTful API definition.
+    RESTful API definition. Currently contains
+    only one child:
+
+      * `/tor`: :class:`api.torinstance.TorInstances`.
     '''
 
     def __init__(self, config):
         resource.Resource.__init__(self)
-        resolver = client.Resolver(servers=[('8.8.8.8', 53)])
-        # self.putChild('dns', DNSRoot(resolver=resolver))
         self.putChild('tor', TorInstances(config))
 
 

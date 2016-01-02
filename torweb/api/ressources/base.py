@@ -3,8 +3,10 @@ from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
 from twisted.web.server import NOT_DONE_YET
-
+from .instanceconfig import TorInstanceConfig
 from torweb.api.util import response
+
+
 __all__ = ('TorResource', 'TorResourceDetail')
 
 
@@ -24,15 +26,25 @@ class TorResource(resource.Resource):
     #: the same constructor parameters as :class:`TorResourceDetail`.
     detail_class = None
 
-    def __init__(self, torstate=None):
+    needs_state = True
+
+    def __init__(self, config=None):
         resource.Resource.__init__(self)
+
+        if config is None:
+            config = TorInstanceConfig()
+        elif not isinstance(config, TorInstanceConfig):
+            raise TypeError("Expected TorInstanceConfig")
+        self._config = config
+        self._check_class_attributes()
+
+    def _check_class_attributes(self):
         if self.json_list_class is None:
             raise RuntimeError('json_list_class not overriden')
         if self.json_detail_class is None:
             raise RuntimeError('json_detail_class not overriden')
         if self.detail_class is None:
             self.detail_class = TorResourceDetail
-        self._torstate = torstate
 
     def get_list(self):
         '''
@@ -63,7 +75,7 @@ class TorResource(resource.Resource):
                 items.append(self.json_list_class(item).as_dict())
             result['objects'] = items
         else:
-            result['error'] = {'message': error, 'name': 'Not ready'}
+            result = response.error('Not ready', error)
         return result
 
     def getChild(self, ident, request):
@@ -91,16 +103,31 @@ class TorResource(resource.Resource):
             return resource.NoResource(error)
 
     def get_torstate(self):
-        return self._torstate
+        return self._config.state
 
-    def set_torstate(self, torstate):
-        self._torstate = torstate
+    def set_torstate(self, state):
+        self._config.state = state
 
-    torstate = property(get_torstate)
+    torstate = property(get_torstate, set_torstate)
 
     def check_torstate(self):
-        if self._torstate is None:
+        if self._config.state is None:
             return "Tor state is unknown."
+
+    @property
+    def configuration(self):
+        return self._config.configuration
+
+
+class CallOnRender(object):
+
+    def __init__(self, method):
+        self.method = method
+
+    @response.json
+    def __call__(self, request):
+        self.object[self.method]()
+        return {}
 
 
 class TorResourceDetail(resource.Resource):
