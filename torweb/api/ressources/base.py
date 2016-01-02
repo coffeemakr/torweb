@@ -100,7 +100,7 @@ class TorResource(resource.Resource):
                 return resource.NoResource("Resource doesn't exist.")
             return self.detail_class(item, self.json_detail_class)
         else:
-            return resource.NoResource(error)
+            return response.JsonError("Not ready", error)
 
     def get_torstate(self):
         return self._config.state
