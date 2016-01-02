@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+JSON circuit wrappers
+'''
 from __future__ import absolute_import, print_function, with_statement
 
 from .router import JsonRouterMinimal
@@ -8,6 +11,9 @@ __all__ = ('JsonCircuitMinimal', 'JsonCircuit')
 
 
 class JsonCircuit(JsonObject):
+    '''
+    Serializable wrapper for Circuit
+    '''
 
     attributes = (
         'id',
@@ -18,20 +24,26 @@ class JsonCircuit(JsonObject):
         'time_created'
     )
 
-    def get_path(self, path):
+    @staticmethod
+    def get_path(path):
+        '''
+        Returns a list of all routers in path.
+        '''
         result = []
-        if self.txtor is not None:
-            for router in path:
-                result.append(JsonRouterMinimal(router).as_dict())
+        for router in path:
+            result.append(JsonRouterMinimal(router).as_dict())
         return result
 
     def as_dict(self):
         result = super(JsonCircuit, self).as_dict()
-        result['path'] = self.get_path(result['path'])
+        result['path'] = JsonCircuit.get_path(result['path'])
         return result
 
 
 class JsonCircuitMinimal(JsonCircuit):
+    '''
+    Minimal wrapper for a circuit.
+    '''
     attributes = (
         'id',
         'state',

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+JSON router wrapper
+'''
 from __future__ import absolute_import, print_function, with_statement
-
 
 from .base import JsonObject
 

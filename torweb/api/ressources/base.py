@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+'''
+This module provides classes for resources which depend on a tor instance.
+'''
 from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
-from twisted.web.server import NOT_DONE_YET
 from .instanceconfig import TorInstanceConfig
 from torweb.api.util import response
 
@@ -64,8 +66,6 @@ class TorResource(resource.Resource):
     def render_GET(self, request):
         '''
         Renders a json list of all children.
-
-        ..todo:: return NOT_DONE_YET and write each child seperatly.
         '''
         error = self.check_torstate()
         result = {}

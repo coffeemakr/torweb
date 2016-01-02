@@ -5,9 +5,13 @@ from twisted.trial import unittest
 from torweb.api.ressources import lookup
 from twisted.internet import defer
 from twisted.web.test.test_web import DummyRequest
-from .util import render
+from twisted.internet.base import DelayedCall
 from twisted.names import client
+
+from .util import render
 import json
+
+DelayedCall.debug = True
 
 
 class TestReverseLookup(unittest.TestCase):

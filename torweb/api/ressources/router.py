@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
 from .base import TorResource
-from torweb.api.json import JsonRouter
+from torweb.api.json.router import JsonRouter
 
 __all__ = ('RouterRoot',)
 

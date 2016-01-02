@@ -7,9 +7,6 @@ from twisted.web import server
 from twisted.names import dns
 import json
 
-from twisted.internet.base import DelayedCall
-DelayedCall.debug = True
-
 __all__ = ('DNSRoot', 'ReverseDNS')
 
 

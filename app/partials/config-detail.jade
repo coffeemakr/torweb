@@ -1,28 +1,28 @@
 include includes/error
 div(ng-if="!content.error")
-  h1 Config {{config.name}}
+  h1 Config {{config.id}}
   form(ng-switch="config.type")
     .row.form-group(ng-switch-when="bool")
       .col-sm-1
         input.form-control(id="value_checkbox", name="value", type="checkbox", ng-model="config.value")
       .col-sm-11
-        label.form-control-label(for="value_checkbox") {{config.name}}
+        label.form-control-label(for="value_checkbox") {{config.id}}
 
     .row.form-group(ng-switch-when="int")
       .col-sm-6
-        label.form-control-label(for="value_int") {{config.name}}
+        label.form-control-label(for="value_int") {{config.id}}
       .col-sm-6
         input.form-control(id="value_int", name="value", type="number", ng-model="config.value")
     .row.form-group(ng-switch-when="str")
       .col-sm-6
-        label.form-control-label(for="value_str") {{config.name}}
+        label.form-control-label(for="value_str") {{config.id}}
       .col-sm-6
         input.form-control(id="value_str", name="value", type="text", ng-model="config.value")
 
     div(ng-switch-when="list")
       .row.input-group
         .col-lg-12
-          label.form-control-label {{config.name}}
+          label.form-control-label {{config.id}}
       .row
         .col-lg-12
           textarea.form-control(style="height:10rem;", name="value", ng-model="config.value", ng-list!="&#10;", ng-trim="false")

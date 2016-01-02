@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+'''
+JSON stream wrapper.
+'''
 from __future__ import absolute_import, print_function, with_statement
-
 
 from .base import JsonObject
 from .circuit import JsonCircuitMinimal
+
 __all__ = ('JsonStream',)
 
 

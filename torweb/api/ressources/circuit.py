@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
 from torweb.api.util import response
-from torweb.api.json import JsonCircuit
+from torweb.api.json.circuit import JsonCircuit
 from .base import TorResource, TorResourceDetail
 
 __all__ = ('CircuitRoot', 'Circuit')

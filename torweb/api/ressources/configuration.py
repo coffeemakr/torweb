@@ -15,15 +15,31 @@ ERR_CONFIG_NREADY = response.error("Not ready", "Configuration was not set.")
 
 
 class ConfigObject(object):
+    '''
+    Wrapper for configuration values.
+    '''
 
     def __init__(self, name, config):
+
+        #: The :class:`txtorcon.Toconfig` configuration object
         self.config = config
-        self.value = config.config[name]
+        #: The name of the configuration entry
         self.name = name
+        #: The identifier is the same as the name
         self.id = name
 
     @property
-    def type(self):
+    def value(self):
+        '''
+        The value of the configuration entry.
+        '''
+        return self.config.config[self.name]
+
+    @property
+    def value_type(self):
+        '''
+        Returns a string of the value type.
+        '''
         name = type(self.value).__name__
         if name == '_ListWrapper':
             name = 'list'
@@ -33,38 +49,63 @@ class ConfigObject(object):
 
 
 class Configuration(TorResourceDetail):
+    '''
+    Resource representing a single configuration entry.
+    '''
+
+    def update_value(self, value):
+        '''
+        Updates the value and returns a defered.
+        '''
+        if isinstance(value, bool):
+            value = int(value)
+
+        setattr(self.object.config, self.object.name, value)
+        return self.object.config.save()
 
     @response.json
     @request.json
     def render_POST(self, request):
+        '''
+        Renders a POST request.
+        This calls :meth:`update_value`.
+        '''
         if 'value' not in request.json_content:
             return response.error("Invalid Request",
                                   "You sent an invalid request.")
-        if self.configuration is None:
+        if self.object.config is None:
             return ERR_CONFIG_NREADY
 
         value = request.json_content['value']
-        if type(value) is bool:
-            value = int(value)
 
-        original_value = self.configuration.config[self.name]
-        setattr(self.configuration, self.name, value)
-        d = self.configuration.save()
+        original_value = self.object.value
+
+        defered = self.update_value(value)
 
         def on_error(error):
-            self.configuration.config[self.name] = original_value
+            '''
+            called on save error.
+            '''
+            self.object.config.config[self.object.name] = original_value
             request.write(json.dumps(response.error_tb(error)).encode('utf-8'))
             request.finish()
 
         def on_success(*args):
+            '''
+            Called on success.
+            '''
             request.write(self.render_GET(request))
             request.finish()
-        d.addCallback(on_success)
-        d.addErrback(on_error)
+
+        defered.addCallback(on_success)
+        defered.addErrback(on_error)
         return server.NOT_DONE_YET
 
 
 class ConfigurationRoot(TorResource):
+    '''
+    Resource representing the whole tor process configuration.
+    '''
 
     detail_class = Configuration
 
@@ -73,9 +114,12 @@ class ConfigurationRoot(TorResource):
     json_detail_class = JsonConfig
 
     def get_list(self):
+        '''
+        Returns a list of configurations.
+        '''
         # TODO: check if configuration is ready
         entries = []
-        for name, value in self._config.configuration.config.items():
+        for name in self._config.configuration.config:
             obj = ConfigObject(name, self._config.configuration)
             entries.append(obj)
         return entries
