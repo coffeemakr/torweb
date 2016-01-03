@@ -16,6 +16,12 @@ div(ng-if="!content.error")
       .property
         .title Created on
         .value {{ circuit.time_created | date:"medium"}}
+  .row
+    .col-lg-4
+      .property
+        .title Purpose
+        .value {{circuit.purpose}} 
+
 
   h2 Nodes
   .table-responsive
