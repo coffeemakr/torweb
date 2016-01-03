@@ -8,8 +8,37 @@ from twisted.web import resource
 from .instanceconfig import TorInstanceConfig
 from torweb.api.util import response
 from torweb.api.json.base import IJSONSerializable
+import zope.interface
 
 __all__ = ('TorResource', 'TorResourceDetail')
+
+
+class ITorResource(zope.interface.Interface):
+    '''
+    Tor resource
+    '''
+    json_list_class = zope.interface.Attribute(
+        "Class to serialize an object for lists.")
+
+    json_detail_class = zope.interface.Attribute(
+        "Class to serialize the object with the max. verbosity.")
+
+    def get_list(self):
+        '''
+        Should return a list of objects
+        '''
+
+    def get_by_id(self, ident):
+        '''
+        Should return a single object.
+
+        :param ident: The identifier
+        '''
+
+    def render_GET(self, request):
+        '''
+        Renders a json list of all children.
+        '''
 
 
 class TorResource(resource.Resource):
@@ -17,18 +46,18 @@ class TorResource(resource.Resource):
     Base class for resources bound to a tor instance.
     '''
 
+    zope.interface.implements(ITorResource)
+
     #: Class to serialize an object for lists.
-    json_list_class = NotImplementedError
+    json_list_class = None
 
     #: Class to serialize the object with the max. verbosity.
-    json_detail_class = NotImplementedError
+    json_detail_class = None
 
     #: Class for child resources. This should be an subclass of
     #: :class:`TorResourceDetail` or :class:`resource.Resource` which takes
     #: the same constructor parameters as :class:`TorResourceDetail`.
     detail_class = None
-
-    needs_state = True
 
     def __init__(self, config=None):
         resource.Resource.__init__(self)
@@ -40,6 +69,20 @@ class TorResource(resource.Resource):
         self._config = config
         self._check_class_attributes()
 
+    def get_list(self):
+        '''
+        Should return a list of objects
+        '''
+        raise NotImplementedError
+
+    def get_by_id(self, ident):
+        '''
+        Should return a single object.
+
+        :param ident: The identifier
+        '''
+        raise NotImplementedError
+
     def _check_class_attributes(self):
         '''
         Checks if all class attributes are properly overwritten.
@@ -50,20 +93,6 @@ class TorResource(resource.Resource):
             raise RuntimeError('json_detail_class not overriden')
         if self.detail_class is None:
             self.detail_class = TorResourceDetail
-
-    def get_list(self):
-        '''
-        Should return a list of objects
-        '''
-        raise NotImplementedError()
-
-    def get_by_id(self, ident):
-        '''
-        Should return a single object.
-
-        :param ident: The identifier
-        '''
-        raise NotImplementedError()
 
     @response.json
     def render_GET(self, request):

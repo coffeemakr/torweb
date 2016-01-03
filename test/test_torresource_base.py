@@ -8,15 +8,22 @@ from twisted.web.test.test_web import DummyRequest
 from twisted.web.resource import NoResource
 from twisted.internet.defer import inlineCallbacks
 import json
-
+from torweb.api.json import base as jsonbase
+from torweb.api.util import response
+import zope.interface
 
 class JsonClass(object):
-
+    zope.interface.implements(jsonbase.IJSONSerializable)
     def __init__(self, obj):
         self.object = obj
 
     def as_dict(self):
+        'Returns a dict'
         return {'object': self.object}
+
+    def json(self):
+        'Returns JSON'
+        return json.dumps(self.as_dict()).encode('utf-8')
 
 
 class TorResourceWithJson(base.TorResource):
@@ -32,17 +39,21 @@ class TestTorResourceBase(unittest.TestCase):
         self.instanceconfig.state = self.torstate
 
     def test_set_torstate_afterwards(self):
-        r = TorResourceWithJson()
-        self.assertEquals(r.torstate, None)
-        self.assertEquals(r.get_torstate(), None)
-        r.set_torstate(self.torstate)
-        self.assertEquals(r.torstate, self.torstate)
-        self.assertEquals(r.get_torstate(), self.torstate)
+        '''
+        Test if the torstate can be set after 
+        constructing an object.
+        '''
+        resource = TorResourceWithJson()
+        self.assertEquals(resource.torstate, None)
+        resource.torstate = self.torstate
+        self.assertEquals(resource.torstate, self.torstate)
 
-    def test_set_torstate_in_constructor(self):
-        r = TorResourceWithJson(self.instanceconfig)
-        self.assertEquals(r.torstate, self.torstate)
-        self.assertEquals(r.get_torstate(), self.torstate)
+    def test_torstate_in_constructor(self):
+        '''
+        Test of the torstate can be set in the constructor.
+        '''
+        resource = TorResourceWithJson(self.instanceconfig)
+        self.assertEquals(resource.torstate, self.torstate)
 
     def test_json_list_class_not_set(self):
         class TorResourceWithJson1(base.TorResource):
@@ -57,25 +68,27 @@ class TestTorResourceBase(unittest.TestCase):
             TorResourceWithJson1()
             self.fail("No exception thrown for TorResourceWithJson1")
         except RuntimeError as why:
-            self.assertTrue('json_list_class' in str(why))
+            msg = "json_list_class not in error message: " + str(why)
+            self.assertTrue('json_list_class' in str(why), msg=msg)
 
         try:
             TorResourceWithJson2()
             self.fail("No exception thrown for TorResourceWithJson2")
         except RuntimeError as why:
-            self.assertTrue('json_detail_class' in str(why))
+            msg = "json_detail_class not in error message: " + str(why)
+            self.assertTrue('json_detail_class' in str(why), msg=msg)
 
     def test_get_list_notimplemented(self):
 
-        r = TorResourceWithJson()
+        resource = TorResourceWithJson()
         try:
-            r.get_list()
+            resource.get_list()
             self.fail("Nothing thrown")
         except NotImplementedError:
             pass
 
         try:
-            r.get_by_id(0)
+            resource.get_by_id(0)
             self.fail("Nothing thrown")
         except NotImplementedError:
             pass
@@ -188,7 +201,7 @@ class TestTorResourceBase(unittest.TestCase):
         self.assertIsInstance(payload, dict)
         self.assertTrue('error' in payload, msg=payload)
 
-    def test_get_child_without_satte(self):
+    def test_get_child_without_state(self):
         class LocalTorResource(TorResourceWithJson):
 
             def get_by_id(self, ident):
@@ -198,7 +211,7 @@ class TestTorResourceBase(unittest.TestCase):
         request.responseCode = 200
         resource = LocalTorResource()
         child = resource.getChildWithDefault('1', request)
-        self.assertIsInstance(child, NoResource)
+        self.assertIsInstance(child, response.JsonError)
 
 
 class TestTorResourceDetail(unittest.TestCase):

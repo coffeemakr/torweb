@@ -2,9 +2,11 @@
 from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
+import zope.interface
+
 from torweb.api.util import response
 from torweb.api.json.circuit import JsonCircuit
-from .base import TorResource, TorResourceDetail
+from .base import TorResource, TorResourceDetail, ITorResource
 
 __all__ = ('CircuitRoot', 'Circuit')
 
@@ -18,6 +20,8 @@ class Circuit(TorResourceDetail):
 
 
 class CircuitRoot(TorResource):
+
+    zope.interface.implements(ITorResource)
 
     json_list_class = JsonCircuit
     json_detail_class = JsonCircuit

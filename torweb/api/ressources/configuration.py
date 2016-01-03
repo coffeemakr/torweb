@@ -6,9 +6,12 @@ import re
 
 from twisted.web import server
 
+import zope.interface
+
 from torweb.api.util import response, request
 from torweb.api.json import configuration
-from .base import TorResource, TorResourceDetail
+from .base import TorResource, TorResourceDetail, ITorResource
+
 
 __all__ = ('ConfigurationRoot', 'Configuration')
 
@@ -112,6 +115,8 @@ class ConfigurationRoot(TorResource):
     '''
     Resource representing the whole tor process configuration.
     '''
+
+    zope.interface.implements(ITorResource)
 
     detail_class = Configuration
 

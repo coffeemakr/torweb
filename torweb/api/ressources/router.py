@@ -2,13 +2,16 @@
 from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
-from .base import TorResource
+import zope.interface
+from .base import TorResource, ITorResource
 from torweb.api.json.router import JsonRouter
 
 __all__ = ('RouterRoot',)
 
 
 class RouterRoot(TorResource):
+
+    zope.interface.implements(ITorResource)
 
     json_detail_class = JsonRouter
     json_list_class = JsonRouter

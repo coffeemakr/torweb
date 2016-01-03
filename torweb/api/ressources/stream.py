@@ -2,7 +2,8 @@
 from __future__ import absolute_import, print_function, with_statement
 
 from twisted.web import resource
-from .base import TorResource, TorResourceDetail
+import zope.interface
+from .base import TorResource, TorResourceDetail, ITorResource
 from torweb.api.util import response
 from torweb.api.json.stream import JsonStream
 
@@ -27,6 +28,8 @@ class StreamRoot(TorResource):
     Stream API base. This class renders lists and implements :meth:`getChild`
     to return :class:`Stream` objects for details and modifications.
     '''
+
+    zope.interface.implements(ITorResource)
 
     #: The json wrapper for lists.
     json_list_class = JsonStream
