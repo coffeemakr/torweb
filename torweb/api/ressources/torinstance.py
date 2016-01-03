@@ -179,19 +179,19 @@ class TorInstance(resource.Resource):
     def _password_callback(self):
         return self._password
 
-    def get_password(self):
+    def __get_password(self):
         '''
         The password to authenticate on the tor control port.
         '''
         return self._password
 
-    def set_password(self, password):
+    def __set_password(self, password):
         '''
         Set the password.
         '''
         self._password = password
 
-    password = property(get_password, set_password)
+    password = property(__get_password, __set_password)
 
     @property
     def dns_port(self):
@@ -234,13 +234,13 @@ class TorInstance(resource.Resource):
             return configs
         return None
 
-    def set_id(self, ident):
+    def __set_id(self, ident):
         '''
         Sets the identifiert of this instance.
         '''
         self._id = ident
 
-    def get_id(self):
+    def __get_id(self):
         '''
         Return the identifier for this instance.
         If the identifier is not set previously, a new identifier is generated
@@ -256,7 +256,7 @@ class TorInstance(resource.Resource):
             self._id = str(ident)
         return self._id
 
-    id = property(get_id, set_id)
+    id = property(__get_id, __set_id)
 
     @response.json
     def render_GET(self, request):
@@ -278,9 +278,9 @@ class TorInstances(resource.Resource):
         resource.Resource.__init__(self)
         self.config = config
         self.instances = {}
-        for i, config in enumerate(self.config["connections"]):
+        for index, config in enumerate(self.config["connections"]):
             instance = self._get_instance_from_config(config)
-            instance.set_id(str(i))
+            instance.id = str(index)
             self.instances[instance.id] = instance
 
     @staticmethod
@@ -307,7 +307,7 @@ class TorInstances(resource.Resource):
         instance.connect(port=port, host=host)
         return instance
 
-    def getChild(self, torInstance, request):
+    def getChild(self, torInstance, *args):
         '''
         Returns the torinstance.
         '''
@@ -316,7 +316,7 @@ class TorInstances(resource.Resource):
         return resource.NoResource("Instances does not exist.")
 
     @response.json
-    def render_GET(self, request):
+    def render_GET(self, *args):
         '''
         Returns an instance as JSON
         '''
@@ -327,7 +327,7 @@ class TorInstances(resource.Resource):
 
     @response.json
     @request.json
-    def render_PUT(self, request):
+    def render_PUT(self, *args):
         '''
         Create a new instance
         '''
