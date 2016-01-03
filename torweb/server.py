@@ -48,6 +48,9 @@ class ApiRessource(resource.Resource):
 
 
 def main():
+    '''
+    Run the torweb server from command line arguments.
+    '''
     from twisted.python import log
     import sys
     import argparse
@@ -76,21 +79,22 @@ def main():
     if not args.quiet:
         log.startLogging(sys.stdout)
 
-    rootFolder = os.path.abspath(
+    root_folder = os.path.abspath(
         os.path.join(os.path.split(__file__)[0], '..'))
-    s = server.Site(RootResource(rootFolder))
+    site = server.Site(RootResource(root_folder))
     if args.tls:
         from twisted.internet import ssl
-        with open(os.path.join(rootFolder, args.private_key)) as certFile:
-            certData = certFile.read()
-        with open(os.path.join(rootFolder, args.certificate)) as certFile:
-            certData += certFile.read()
+        cert_data = ""
+        with open(os.path.join(root_folder, args.private_key)) as cert_file:
+            cert_data = cert_file.read()
+        with open(os.path.join(root_folder, args.certificate)) as cert_file:
+            cert_data += cert_file.read()
 
-        certificate = ssl.PrivateCertificate.loadPEM(certData)
-        reactor.listenSSL(args.port, s, certificate.options(),
+        certificate = ssl.PrivateCertificate.loadPEM(cert_data)
+        reactor.listenSSL(args.port, site, certificate.options(),
                           interface=args.listen_address)
     else:
-        reactor.listenTCP(args.port, s, interface=args.listen_address)
+        reactor.listenTCP(args.port, site, interface=args.listen_address)
     reactor.run()
 
 if __name__ == "__main__":
