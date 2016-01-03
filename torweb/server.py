@@ -2,6 +2,16 @@
 '''
 The server module contains the essential resources to start the webserver
 from console on via python calls.
+
+Starting from Commandline
+-------------------------
+
+The server can be started by executing the module directly::
+
+   python -m torweb
+
+You can call `python -m torweb --help` to see all available options.
+
 '''
 
 from __future__ import absolute_import, print_function, with_statement

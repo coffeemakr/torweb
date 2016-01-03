@@ -63,7 +63,7 @@ class TorInstance(resource.Resource):
         self.port = None
 
         if password is not None:
-            self.set_password(password)
+            self.password = password
 
         self.circuits = CircuitRoot(config=self._config)
         self.routers = RouterRoot(config=self._config)
@@ -114,18 +114,23 @@ class TorInstance(resource.Resource):
         defered.addCallback(self._build_state)
         defered.addErrback(self._connection_failed)
 
-    def _build_state(self, proto):
-        self._protocol = proto
-        proto.post_bootstrap.addErrback(self._connection_failed)
-        proto.post_bootstrap.addCallback(self._connection_bootstrapped)
-        self._config.state = txtorcon.TorState(proto)
+    def _build_state(self, protocol):
+        '''
+        Callback on successfully established connection.
+        This method builds the :attr:`state` from the provided
+        protocol.
+        '''
+        self._protocol = protocol
+        protocol.post_bootstrap.addErrback(self._connection_failed)
+        protocol.post_bootstrap.addCallback(self._connection_bootstrapped)
+        self._config.state = txtorcon.TorState(protocol)
         self.websocket_factory.set_torstate(self._config.state)
-        return proto
+        return protocol
 
     @property
     def state(self):
         '''
-        Returns a :class:`txtorcon.
+        Returns a :class:`txtorcon.TorState` or :const:`None`
         '''
         return self._config.state
 
@@ -142,33 +147,45 @@ class TorInstance(resource.Resource):
         '''
         self.connected = True
         self.connection_error = None
-        print("Connection suceeded %s " % args)
+        print("Connection succeeded: %s " % args)
         defered = txtorcon.TorConfig.from_connection(self._protocol)
         defered.addCallback(self._configuration_callback)
         return args
 
     def _bootstrap_failed(self, error):
+        '''
+        Errorback for when bootstrapping fails.
+        '''
         self.connection_error = error
         print("Bootstrapping failed: %s" % error.getBriefTraceback())
 
     def create(self, config):
         '''
-        Create a new tor proess.
+        Create a new tor process.
+        :param config: a :class:`txtorcon.TorConfig` object.
         '''
         self.connected = False
         if getattr(config, "ControlPort", 0) == 0:
             raise ValueError("ControlPort has to be set to a non-zero value.")
+
         self.port = config.ControlPort
         self.host = "127.0.0.1"
+
         defered = txtorcon.launch_tor(config=config, reactor=reactor)
         defered.addCallback(self._process_success)
         defered.addErrback(self._process_failed)
 
     def _process_success(self, process):
+        '''
+        Called when :meth:`create` succeeds.
+        '''
         print("Process sucess")
         self._build_state(process.tor_protocol)
 
     def _process_failed(self, error):
+        '''
+        Called when :meth:`create` fails.
+        '''
         self.connection_error = error
         print("Spawning failed: %s" % error.getBriefTraceback())
 
@@ -191,7 +208,8 @@ class TorInstance(resource.Resource):
         '''
         self._password = password
 
-    password = property(__get_password, __set_password)
+    password = property(__get_password, __set_password,
+                        doc="Password")
 
     @property
     def dns_port(self):
