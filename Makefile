@@ -16,10 +16,11 @@ NPM_TARGET := node_modules/.installed
 
 PIP_SOURCE:=requirements.txt
 PIP_DEV_SOURCE:=dev-requirements.txt
-
+PIP_DOC_SOURCE:=doc-requirements.txt
 
 PYTHON_PACKAGES:=$(VENV_DIR)/.$(PIP_SOURCE)
 PYTHON_DEV_PACKAGES:=$(VENV_DIR)/.$(PIP_DEV_SOURCE)
+PYTHON_DOC_PACKAGES:=$(VENV_DIR)/.$(PIP_DOC_SOURCE)
 
 PYLINT:=python -m pylint 
 
@@ -59,7 +60,7 @@ html: $(HTML)
 
 
 .PHONY: doc
-doc:
+doc: $(PYTHON_DOC_PACKAGES)
 	$(MAKE) -C doc/ html
 
 # Bower components
