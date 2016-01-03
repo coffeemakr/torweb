@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/coffeemakr/torweb.svg)](https://travis-ci.org/coffeemakr/torweb) 
+[![Documentation Status](https://readthedocs.org/projects/torweb/badge/?version=latest)](http://torweb.readthedocs.org/en/latest/?badge=latest)
 [![codecov.io](https://codecov.io/github/coffeemakr/torweb/coverage.svg?branch=master)](https://codecov.io/github/coffeemakr/torweb?branch=master)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/3c7f75b9559340e59a1e5b9a86ce9ed9/badge.svg)](https://www.quantifiedcode.com/app/project/3c7f75b9559340e59a1e5b9a86ce9ed9)
+
 # Torweb
 
 **WARNING:** This application is currently unstable and might or might not work.
