@@ -10,6 +10,10 @@ __all__ = ('JsonRouterMinimal', 'JsonRouter')
 
 
 class JsonRouter(JsonObjectWrapper):
+    '''
+    JSON wrapper for Router
+    '''
+
     attributes = (
         'name',
         'unique_name',
@@ -29,6 +33,10 @@ class JsonRouter(JsonObjectWrapper):
 
 
 class JsonRouterMinimal(JsonRouter):
+    '''
+    Minimal JSON wrapper for router.
+    '''
+
     attributes = (
         'name',
         'id_hex',

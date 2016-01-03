@@ -25,6 +25,7 @@ class JsonStream(JsonObjectWrapper):
         'circuit'
     )
 
+    #: Convert the state to a text.
     state_text = {
         'NEW': 'New request to connect',
         'NEWRESOLVE': 'New request to resolve an address',
