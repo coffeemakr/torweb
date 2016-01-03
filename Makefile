@@ -39,6 +39,9 @@ BOWER_COMPONENTS=app/components/.installed
 BOWER_SOURCE=bower.json
 
 
+SPHINXBUILD="python -m sphinx"
+export SPHINXBUILD
+
 GIT_HOOK_DIR=.git/hooks
 GIT_PRECOMMIT_HOOK=$(GIT_HOOK_DIR)/pre-commit
 
@@ -53,6 +56,11 @@ html: $(HTML)
 # Render HTML
 %.html: $(NPM_TARGET) %.jade
 	$(JADE) $^
+
+
+.PHONY: doc
+doc:
+	$(MAKE) -C doc/ html
 
 # Bower components
 .PHONY: components

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-Server
+The server module contains the essential resources to start the webserver
+from console on via python calls.
 '''
 
 from __future__ import absolute_import, print_function, with_statement
@@ -39,7 +40,7 @@ class ApiRessource(resource.Resource):
     RESTful API definition. Currently contains
     only one child:
 
-      * `/tor`: :class:`api.torinstance.TorInstances`.
+      * `../tor`: :class:`api.torinstance.TorInstances`.
     '''
 
     def __init__(self, config):
