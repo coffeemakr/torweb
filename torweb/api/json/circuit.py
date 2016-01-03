@@ -6,6 +6,7 @@ from __future__ import absolute_import, print_function, with_statement
 
 from .router import JsonRouterMinimal
 from .base import JsonObjectWrapper
+from .minimalstream import JsonStreamMinimal
 
 __all__ = ('JsonCircuitMinimal', 'JsonCircuit')
 
@@ -21,7 +22,8 @@ class JsonCircuit(JsonObjectWrapper):
         'purpose',
         'path',
         'build_flags',
-        'time_created'
+        'time_created',
+        'streams'
     )
 
     @staticmethod
@@ -37,6 +39,11 @@ class JsonCircuit(JsonObjectWrapper):
     def as_dict(self):
         result = super(JsonCircuit, self).as_dict()
         result['path'] = JsonCircuit.get_path(result['path'])
+        if 'streams' in result:
+            streams = []
+            for stream in result['streams']:
+                streams.append(JsonStreamMinimal(stream).as_dict())
+            result['streams'] = streams
         return result
 
 

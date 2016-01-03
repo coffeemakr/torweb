@@ -58,6 +58,7 @@ class TorInstance(resource.Resource):
         self._password = None
         self._id = None
         self._config.configuration = None
+        self._logs = []
 
         self.host = None
         self.port = None
@@ -76,6 +77,7 @@ class TorInstance(resource.Resource):
         self.putChild('stream', self.streams)
         self.putChild('config', self.configs)
         self.websocket_factory = websocket.TorWebSocketServerFactory()
+        self.websocket_factory.config = self._config
         self.websocket = WebSocketResource(self.websocket_factory)
         self.putChild('websocket', self.websocket)
 
@@ -96,6 +98,18 @@ class TorInstance(resource.Resource):
                     servers=[(self.host, port)])
                 return self.dns
         return resource.NoResource()
+
+    def _log(self, message, type_=None):
+        '''
+        Log a message.
+        '''
+        self._logs.append()
+
+    def _log_error(self, message):
+        '''
+        Log an error.
+        '''
+        self._log(message)
 
     def connect(self, port, host='127.0.0.1'):
         '''
@@ -123,9 +137,17 @@ class TorInstance(resource.Resource):
         self._protocol = protocol
         protocol.post_bootstrap.addErrback(self._connection_failed)
         protocol.post_bootstrap.addCallback(self._connection_bootstrapped)
+        protocol.post_bootstrap.addErrback(self._fatal_error)
         self._config.state = txtorcon.TorState(protocol)
-        self.websocket_factory.set_torstate(self._config.state)
+        self._config.state_built.callback(self._config.state)
         return protocol
+
+    def _fatal_error(self, error):
+        '''
+        Catch unexpected errors
+        '''
+        print("Fatal error: ", error)
+        self.connection_error = error
 
     @property
     def state(self):
@@ -150,6 +172,7 @@ class TorInstance(resource.Resource):
         print("Connection succeeded: %s " % args)
         defered = txtorcon.TorConfig.from_connection(self._protocol)
         defered.addCallback(self._configuration_callback)
+        defered.addErrback(self._fatal_error)
         return args
 
     def _bootstrap_failed(self, error):
@@ -174,6 +197,7 @@ class TorInstance(resource.Resource):
         defered = txtorcon.launch_tor(config=config, reactor=reactor)
         defered.addCallback(self._process_success)
         defered.addErrback(self._process_failed)
+        defered.addErrback(self._fatal_error)
 
     def _process_success(self, process):
         '''

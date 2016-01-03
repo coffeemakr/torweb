@@ -103,9 +103,13 @@ class TorResource(resource.Resource):
             return response.error('Not ready', 'State unknown.')
         result = {}
         items = []
-        for item in self.get_list():
-            items.append(self.json_list_class(item).as_dict())
-        result['objects'] = items
+        try:
+            for item in self.get_list():
+                items.append(self.json_list_class(item).as_dict())
+        except RuntimeError as why:
+            result = response.error_exception(why)
+        else:
+            result['objects'] = items
         return result
 
     def getChild(self, ident, request):
@@ -130,21 +134,6 @@ class TorResource(resource.Resource):
             return self.detail_class(item, self.json_detail_class)
         else:
             return response.JsonError("Not ready", "State unknown.")
-
-    def __get_torstate(self):
-        '''
-        Returns the tor state
-        '''
-        return self._config.state
-
-    def __set_torstate(self, state):
-        '''
-        Sets the tor state
-        '''
-        self._config.state = state
-
-    torstate = property(__get_torstate, __set_torstate,
-                        doc="The txtorcon.TorState")
 
 
 class TorResourceDetail(resource.Resource):

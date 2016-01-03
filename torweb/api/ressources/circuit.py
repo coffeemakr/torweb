@@ -4,7 +4,7 @@
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-from twisted.web import resource
+from twisted.web import server
 import zope.interface
 
 from torweb.api.util import response
@@ -20,10 +20,26 @@ class Circuit(TorResourceDetail):
       * `GET`: Get details (see :meth:`TorResourceDetail.render_GET`)
       * `DELETE`:  Close the circuit (see :meth:`render_DELETE`)
     '''
+
     @response.json
     def render_DELETE(self, request):
-        self.object.close()
-        return {}
+        '''
+        Closes the circuit
+        '''
+        def close_successfull(arg, request):
+            "Close callback"
+            print("Close curcuit sucess: ", arg)
+            response.send_json(request, {})
+
+        def close_failed(error, request):
+            "Close errback"
+            print("Close curcuit failed: ", error)
+            response.send_json(request, response.error_tb(error))
+
+        deferred = self.object.close()
+        deferred.addCallback(close_successfull, request)
+        deferred.addErrback(close_failed, request)
+        return server.NOT_DONE_YET
 
 
 class CircuitRoot(TorResource):
@@ -41,9 +57,9 @@ class CircuitRoot(TorResource):
 
     def get_by_id(self, ident):
         ident = int(ident)
-        if ident not in self.torstate.circuits:
+        if ident not in self._config.state.circuits:
             return None
-        return self.torstate.find_circuit(ident)
+        return self._config.state.find_circuit(ident)
 
     def get_list(self):
-        return self.torstate.circuits.values()
+        return self._config.state.circuits.values()

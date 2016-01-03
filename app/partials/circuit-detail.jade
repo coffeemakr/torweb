@@ -40,3 +40,40 @@ div(ng-if="!content.error")
           td
             button.btn.btn-primary(ng-click="routerDetails(router)") Details
 
+
+  h2 Streams
+  p
+    strong Warning:&nbsp;
+    | These streams are not updated automatically at the moment.
+    
+  .table-responsive
+  table.table.table-striped
+    thead
+      th Id
+      th State
+      th Source
+      th Target Host
+      th Target Address
+      th Actions
+    tbody
+      tr(ng-repeat="s in circuit.streams")
+        td {{s.id}}
+        td 
+          span.label.label-pill(class="label-{{s.state | statusStyleSuffix}}") {{s.state}}
+        td(ng-if="s.source_addr") {{s.source_addr}}:{{s.source_port}}
+        td(ng-if="!s.source_addr") 
+          i noip
+          | :{{s.source_port}}
+
+        td {{guessHostname(s.target_host, circuit.streams)}}
+        td(ng-if="s.target_addr") {{s.target_addr}}
+           span(ng-if="s.target_port != 0") :{{s.target_port}}
+           
+        td(ng-if="!s.target_addr") 
+          i noip
+          span(ng-if="s.target_port != 0") :{{s.target_port}}
+
+        td
+          a.btn.btn-danger(ng-if="s.state != 'CLOSED'", ng-click="deleteStream(s)", role="button")
+            span.glyphicon.glyphicon-remove-circle(aria-hidden="true")
+            | Close

@@ -128,7 +128,10 @@ class ConfigurationRoot(TorResource):
         '''
         Returns a list of configurations.
         '''
-        # TODO: check if configuration is ready
+        # TODO: better error handling
+        if not self._config.configuration:
+            raise RuntimeError("Configuration not ready")
+
         entries = []
         for name in self._config.configuration.config:
             obj = ConfigObject(name, self._config.configuration)
@@ -144,5 +147,4 @@ class ConfigurationRoot(TorResource):
         ident = str(ident)
         if ident not in self._config.configuration.config:
             return None
-        value = self._config.configuration.config[ident]
         return ConfigObject(ident, self._config.configuration)

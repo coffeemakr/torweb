@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from twisted.internet import defer
 
 
 class TorInstanceConfig(object):
@@ -12,3 +13,9 @@ class TorInstanceConfig(object):
     instance = None
     #: :class:`txtorcon.TorConfig` instance
     configuration = None
+
+    def __init__(self):
+        '''
+        Create new instance
+        '''
+        self.state_built = defer.Deferred()

@@ -45,9 +45,9 @@ class StreamRoot(TorResource):
         Returns a stream by its identifier.
         '''
         ident = int(ident)
-        if ident not in self.torstate.streams:
+        if ident not in self._config.state.streams:
             return None
-        return self.torstate.streams[ident]
+        return self._config.state.streams[ident]
 
     def get_list(self):
-        return self.torstate.streams.values()
+        return self._config.state.streams.values()

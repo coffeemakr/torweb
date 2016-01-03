@@ -34,6 +34,10 @@ EVENT_STREAM_FAILED = "failed"
 class MyServerProtocol(WebSocketServerProtocol):
     implements(txtorcon.ICircuitListener, txtorcon.IStreamListener)
 
+    def state_callback(self, state):
+        state.add_circuit_listener(self)
+        state.add_stream_listener(self)
+
     def onMessage(self, payload, isBinary):
         if not isBinary:
             payload = json.loads(payload.decode('utf8'))
@@ -43,8 +47,11 @@ class MyServerProtocol(WebSocketServerProtocol):
         print("Client connecting: {}".format(request.peer))
 
     def onOpen(self):
-        # self.sendMessage("hello")
         print("WebSocket connection open.")
+
+    def onClose(self, wasClean, code, reason):
+        # TODO: remove listener?
+        print("Websocekt closed")
 
     def send_event(self, event, data):
         '''
@@ -162,21 +169,16 @@ class TorWebSocketServerFactory(WebSocketServerFactory):
 
     protocol = MyServerProtocol
 
-    state = None
-
-    def set_torstate(self, state):
-        '''
-        Set the torstate
-        '''
-        self.state = state
-        return state
+    config = None
 
     def buildProtocol(self, *args, **kwargs):
         proto = super(TorWebSocketServerFactory,
                       self).buildProtocol(*args, **kwargs)
-        if self.state:
-            self.state.add_circuit_listener(proto)
-            self.state.add_stream_listener(proto)
+
+        if self.config.state is None:
+            self.config.state_built.addCallback(proto.state_callback)
         else:
-            print("no listeners added!")
+            proto.state_callback(self.config.state)
+
+        print("protocol created")
         return proto

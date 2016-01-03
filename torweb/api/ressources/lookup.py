@@ -169,7 +169,7 @@ class DNSLookup(DNSResource):
 
         This method calls :meth:`_serialize_answers`.
         '''
-        answers, auth, add = data
+        answers, _, _ = data
         result = {'objects': self._serialize_answers(answers)}
         response.send_json(request, result)
 

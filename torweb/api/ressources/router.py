@@ -10,7 +10,9 @@ __all__ = ('RouterRoot',)
 
 
 class RouterRoot(TorResource):
-
+    '''
+    Router list resource.
+    '''
     zope.interface.implements(ITorResource)
 
     json_detail_class = JsonRouter
@@ -20,7 +22,7 @@ class RouterRoot(TorResource):
         '''
         Returns a list of router
         '''
-        return self.torstate.routers_by_hash.values()
+        return self._config.state.routers_by_hash.values()
 
     def get_by_id(self, ident):
         '''
@@ -28,6 +30,6 @@ class RouterRoot(TorResource):
         '''
         if not ident.startswith('$'):
             ident = '$' + ident
-        if ident not in self.torstate.routers_by_hash:
+        if ident not in self._config.state.routers_by_hash:
             return None
-        return self.torstate.routers_by_hash[ident]
+        return self._config.state.routers_by_hash[ident]

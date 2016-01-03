@@ -12,8 +12,10 @@ from torweb.api.json import base as jsonbase
 from torweb.api.util import response
 import zope.interface
 
+
 class JsonClass(object):
     zope.interface.implements(jsonbase.IJSONSerializable)
+
     def __init__(self, obj):
         self.object = obj
 
@@ -27,8 +29,15 @@ class JsonClass(object):
 
 
 class TorResourceWithJson(base.TorResource):
+    "Test resource"
     json_list_class = JsonClass
     json_detail_class = JsonClass
+
+    def get_by_id(self, ident):
+        return {"object": ident}
+
+    def get_list(self):
+        return [1, 2, 3]
 
 
 class TestTorResourceBase(unittest.TestCase):
@@ -38,54 +47,79 @@ class TestTorResourceBase(unittest.TestCase):
         self.instanceconfig = instanceconfig.TorInstanceConfig()
         self.instanceconfig.state = self.torstate
 
-    def test_set_torstate_afterwards(self):
-        '''
-        Test if the torstate can be set after 
-        constructing an object.
-        '''
-        resource = TorResourceWithJson()
-        self.assertEquals(resource.torstate, None)
-        resource.torstate = self.torstate
-        self.assertEquals(resource.torstate, self.torstate)
-
-    def test_torstate_in_constructor(self):
-        '''
-        Test of the torstate can be set in the constructor.
-        '''
-        resource = TorResourceWithJson(self.instanceconfig)
-        self.assertEquals(resource.torstate, self.torstate)
-
     def test_json_list_class_not_set(self):
-        class TorResourceWithJson1(base.TorResource):
+        '''
+        Test if an error is raised of :attr:`json_list_class`
+        is not overriden by the subclass.
+        '''
+
+        class TorResourceWithoutListClass(TorResourceWithJson):
+            "Test Resource without json_list_class"
             json_list_class = None
             json_detail_class = JsonClass
 
-        class TorResourceWithJson2(base.TorResource):
-            json_detail_class = None
-            json_list_class = JsonClass
-
         try:
-            TorResourceWithJson1()
-            self.fail("No exception thrown for TorResourceWithJson1")
+            TorResourceWithoutListClass()
+            self.fail("No exception thrown for TorResourceWithoutListClass")
         except RuntimeError as why:
             msg = "json_list_class not in error message: " + str(why)
             self.assertTrue('json_list_class' in str(why), msg=msg)
 
+    def test_json_detail_class_not_set(self):
+        '''
+        Test if an error is raised of :attr:`json_detail_class`
+        is not overriden by the subclass.
+        '''
+
+        class TorResourceWithoutDetailClass(TorResourceWithJson):
+            "Test Resource without json_detail_class"
+            json_list_class = JsonClass
+            json_detail_class = None
+
         try:
-            TorResourceWithJson2()
-            self.fail("No exception thrown for TorResourceWithJson2")
+            TorResourceWithoutDetailClass()
+            self.fail("No exception thrown for TorResourceWithoutDetailClass")
         except RuntimeError as why:
             msg = "json_detail_class not in error message: " + str(why)
             self.assertTrue('json_detail_class' in str(why), msg=msg)
 
-    def test_get_list_notimplemented(self):
 
-        resource = TorResourceWithJson()
+    def test_get_list_notimplemented(self):
+        '''
+        Test if a TorResource subclass which doesn't implement
+        get_list is detected and a exception is raised.
+        '''
+
+        class TorResourceWithoutGetList(base.TorResource):
+            "Subclass without get_list"
+            json_list_class = JsonClass
+            json_detail_class = JsonClass
+
+            def get_by_id(self, ident):
+                return None
+
+        resource = TorResourceWithoutGetList()
         try:
             resource.get_list()
             self.fail("Nothing thrown")
         except NotImplementedError:
             pass
+
+    def test_get_by_id_notimplemented(self):
+        '''
+        Test if a TorResource subclass which doesn't implement
+        get_by_id is detected and a exception is raised.
+        '''
+
+        class TorResourceWithoutGetById(base.TorResource):
+            "Subclass without get_list"
+            json_list_class = JsonClass
+            json_detail_class = JsonClass
+
+            def get_list(self):
+                return []
+
+        resource = TorResourceWithoutGetById()
 
         try:
             resource.get_by_id(0)

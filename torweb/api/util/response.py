@@ -36,6 +36,14 @@ def error_tb(traceback):
                  traceback.getErrorMessage())
 
 
+def error_exception(exception):
+    '''
+    Returns an error dict from an exception.
+    '''
+    return error(exception.__class__.__name__,
+                 str(exception))
+
+
 def send_json(response, data):
     '''
     Write an JSON object to the response stream.

@@ -3,6 +3,6 @@ div(ng-repeat="error in content.async_errors")
 		strong(ng-if="error.name") {{error.name}}:&nbsp;
 		| {{error.message}}
 .errorpage(ng-if="content.error")
-	h1(ng-if="content.error.name") Error: {{content.error.name}}
+	h1(ng-if="content.error.name") {{content.error.name}}
 	h1(ng-if="!content.error.name") Error
-	p {{content.error.message}}
+	h2 {{content.error.message}}
