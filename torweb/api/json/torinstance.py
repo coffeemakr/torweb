@@ -4,12 +4,12 @@ JSON tor instance wrapper
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-from .base import JsonObject
+from .base import JsonObjectWrapper
 
 __all__ = ('JsonTorInstance', 'JsonTorInstanceMinimal')
 
 
-class JsonTorInstance(JsonObject):
+class JsonTorInstance(JsonObjectWrapper):
     '''
     JSON wrapper for a single tor instance.
     '''

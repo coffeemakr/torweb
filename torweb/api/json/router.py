@@ -4,12 +4,12 @@ JSON router wrapper
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-from .base import JsonObject
+from .base import JsonObjectWrapper
 
 __all__ = ('JsonRouterMinimal', 'JsonRouter')
 
 
-class JsonRouter(JsonObject):
+class JsonRouter(JsonObjectWrapper):
     attributes = (
         'name',
         'unique_name',

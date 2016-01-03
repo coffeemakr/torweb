@@ -5,12 +5,12 @@ JSON circuit wrappers
 from __future__ import absolute_import, print_function, with_statement
 
 from .router import JsonRouterMinimal
-from .base import JsonObject
+from .base import JsonObjectWrapper
 
 __all__ = ('JsonCircuitMinimal', 'JsonCircuit')
 
 
-class JsonCircuit(JsonObject):
+class JsonCircuit(JsonObjectWrapper):
     '''
     Serializable wrapper for Circuit
     '''

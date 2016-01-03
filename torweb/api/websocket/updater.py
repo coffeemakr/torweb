@@ -46,79 +46,128 @@ class MyServerProtocol(WebSocketServerProtocol):
         # self.sendMessage("hello")
         print("WebSocket connection open.")
 
-    def sendEvent(self, event, data):
+    def send_event(self, event, data):
+        '''
+        Sends an event to the connected client.
+        '''
         payload = {
             'type': event,
             'data': data
         }
         self.sendMessage(json.dumps(payload).encode('utf8'))
 
-    def sendCircuitEvent(self, action, circuit):
+    def send_circuit_event(self, action, circuit):
+        '''
+        Sends a circuit event to the connected client.
+        '''
         json_circuit = JsonCircuit(circuit).as_dict()
 
-        self.sendEvent(EVENT_TYPE_CIRCUIT,
-                       {
-                           'action': action,
-                           'circuit': json_circuit
-                       })
+        event = {'action': action,
+                 'circuit': json_circuit}
 
-    def sendStreamEvent(self, action, stream):
+        self.send_event(EVENT_TYPE_CIRCUIT, event)
+
+    def send_stream_event(self, action, stream):
+        '''
+        Sends a stream event to the connected client.
+        '''
         json_stream = JsonStream(stream).as_dict()
 
         if 'circuit' in json_stream and json_stream['circuit'] == None:
             # Don't send removed circuit
             del json_stream['circuit']
 
-        self.sendEvent(EVENT_TYPE_STREAM,
-                       {
-                           'action': action,
-                           'stream': json_stream
-                       })
+        event = {'action': action,
+                 'stream': json_stream}
+
+        self.send_event(EVENT_TYPE_STREAM, event)
 
     def circuit_new(self, circuit):
-        self.sendCircuitEvent(EVENT_CIRCUIT_NEW, circuit)
+        '''
+        Circuit listener method
+        '''
+        self.send_circuit_event(EVENT_CIRCUIT_NEW, circuit)
 
     def circuit_launched(self, circuit):
-        self.sendCircuitEvent(EVENT_CIRCUIT_LAUNCHED, circuit)
+        '''
+        Circuit listener method
+        '''
+        self.send_circuit_event(EVENT_CIRCUIT_LAUNCHED, circuit)
 
     def circuit_extend(self, circuit, router):
-        self.sendCircuitEvent(EVENT_CIRCUIT_EXTEND, circuit)
+        '''
+        Circuit listener method
+        '''
+        self.send_circuit_event(EVENT_CIRCUIT_EXTEND, circuit)
 
     def circuit_built(self, circuit):
-        self.sendCircuitEvent(EVENT_CIRCUIT_BUILT, circuit)
+        '''
+        Circuit listener method
+        '''
+        self.send_circuit_event(EVENT_CIRCUIT_BUILT, circuit)
 
-    def circuit_closed(self, circuit, **kw):
-        self.sendCircuitEvent(EVENT_CIRCUIT_CLOSED, circuit)
+    def circuit_closed(self, circuit, **kwargs):
+        '''
+        Circuit listener method
+        '''
+        self.send_circuit_event(EVENT_CIRCUIT_CLOSED, circuit)
 
     def circuit_failed(self, circuit, **kw):
-        self.sendCircuitEvent(EVENT_CIRCUIT_FAILED, circuit)
+        '''
+        Circuit listener method
+        '''
+        self.send_circuit_event(EVENT_CIRCUIT_FAILED, circuit)
 
     def stream_new(self, stream):
-        self.sendStreamEvent(EVENT_STREAM_NEW, stream)
+        '''
+        Stream listener method
+        '''
+        self.send_stream_event(EVENT_STREAM_NEW, stream)
 
     def stream_succeeded(self, stream):
-        self.sendStreamEvent(EVENT_STREAM_SUCCEEDED, stream)
+        '''
+        Stream listener method
+        '''
+        self.send_stream_event(EVENT_STREAM_SUCCEEDED, stream)
 
     def stream_attach(self, stream, circuit):
-        self.sendStreamEvent(EVENT_STREAM_ATTACH, stream)
+        '''
+        Stream listener method
+        '''
+        self.send_stream_event(EVENT_STREAM_ATTACH, stream)
 
     def stream_detach(self, stream, **kw):
-        self.sendStreamEvent(EVENT_STREAM_DETACH, stream)
+        '''
+        Stream listener method
+        '''
+        self.send_stream_event(EVENT_STREAM_DETACH, stream)
 
     def stream_closed(self, stream, **kw):
-        self.sendStreamEvent(EVENT_STREAM_CLOSED, stream)
+        '''
+        Stream listener method
+        '''
+        self.send_stream_event(EVENT_STREAM_CLOSED, stream)
 
     def stream_failed(self, stream, **kw):
-        self.sendStreamEvent(EVENT_STREAM_FAILED, stream)
+        '''
+        Stream listener method
+        '''
+        self.send_stream_event(EVENT_STREAM_FAILED, stream)
 
 
 class TorWebSocketServerFactory(WebSocketServerFactory):
+    '''
+    Websocket Factory which produces :class:`MyServerProtocol`.
+    '''
 
     protocol = MyServerProtocol
 
     state = None
 
     def set_torstate(self, state):
+        '''
+        Set the torstate
+        '''
         self.state = state
         return state
 

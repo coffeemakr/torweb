@@ -33,9 +33,6 @@ class TorInstance(resource.Resource):
     A resource for a single tor instance.
     '''
 
-    #: State tracker
-    state = None
-
     #: Tor control port
     port = None
 

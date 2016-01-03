@@ -4,12 +4,12 @@ JSON Configuration wrappers
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-from .base import JsonObject
+from .base import JsonObjectWrapper
 
 __all__ = ('JsonConfig', 'JsonConfigMinimal')
 
 
-class JsonConfig(JsonObject):
+class JsonConfig(JsonObjectWrapper):
     '''
     Convert config entry to json
     '''

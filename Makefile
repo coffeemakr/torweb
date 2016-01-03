@@ -124,7 +124,7 @@ precommit_test: pep8
 
 .PHONY: pep8
 pep8: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
-	pep8 $^
+	@ pep8 $^
 
 .PHONY: pylint
 pylint: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)

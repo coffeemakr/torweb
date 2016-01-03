@@ -21,21 +21,35 @@ def json(func):
 
 
 def error(name, message):
+    '''
+    Returns a serializeable dict containing the error message and the
+    error name.
+    '''
     return {'error': {'message': message, 'name': name}}
 
 
-def error_tb(tb):
-    return error(tb.type.__name__, tb.getErrorMessage())
+def error_tb(traceback):
+    '''
+    Returns a error dict containing information about the traceback.
+    '''
+    return error(traceback.type.__name__,
+                 traceback.getErrorMessage())
 
 
 def send_json(response, data):
+    '''
+    Write an JSON object to the response stream.
+    '''
     data = j.dumps(data).encode('utf8')
     response.write(data)
     response.finish()
 
 
 class JsonError(resource.Resource):
-
+    '''
+    Resource class which can be returned by :meth:`resource.Resource.getChild`
+    and is rendered to a JSON error on GET.
+    '''
     message = None
     name = None
 
@@ -48,7 +62,14 @@ class JsonError(resource.Resource):
 
     @json
     def render_GET(self, request):
+        '''
+        Returns the json error.
+        '''
         return error(self.name, self.message)
 
     def getChild(self, child, request):
+        '''
+        Always returns itself so this object can be returned by e.g. the
+        "grand-parents".
+        '''
         return self

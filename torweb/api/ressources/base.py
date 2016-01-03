@@ -7,7 +7,7 @@ from __future__ import absolute_import, print_function, with_statement
 from twisted.web import resource
 from .instanceconfig import TorInstanceConfig
 from torweb.api.util import response
-
+from torweb.api.json.base import IJSONSerializable
 
 __all__ = ('TorResource', 'TorResourceDetail')
 
@@ -18,10 +18,10 @@ class TorResource(resource.Resource):
     '''
 
     #: Class to serialize an object for lists.
-    json_list_class = None
+    json_list_class = NotImplementedError
 
     #: Class to serialize the object with the max. verbosity.
-    json_detail_class = None
+    json_detail_class = NotImplementedError
 
     #: Class for child resources. This should be an subclass of
     #: :class:`TorResourceDetail` or :class:`resource.Resource` which takes
@@ -41,9 +41,12 @@ class TorResource(resource.Resource):
         self._check_class_attributes()
 
     def _check_class_attributes(self):
-        if self.json_list_class is None:
-            raise RuntimeError('json_list_class not overriden')
-        if self.json_detail_class is None:
+        '''
+        Checks if all class attributes are properly overwritten.
+        '''
+        if not IJSONSerializable.implementedBy(self.json_list_class):
+            raise RuntimeError('json_list_class not valid')
+        if not IJSONSerializable.implementedBy(self.json_detail_class):
             raise RuntimeError('json_detail_class not overriden')
         if self.detail_class is None:
             self.detail_class = TorResourceDetail
@@ -67,15 +70,13 @@ class TorResource(resource.Resource):
         '''
         Renders a json list of all children.
         '''
-        error = self.check_torstate()
+        if self._config.state is None:
+            return response.error('Not ready', 'State unknown.')
         result = {}
-        if error is None:
-            items = []
-            for item in self.get_list():
-                items.append(self.json_list_class(item).as_dict())
-            result['objects'] = items
-        else:
-            result = response.error('Not ready', error)
+        items = []
+        for item in self.get_list():
+            items.append(self.json_list_class(item).as_dict())
+        result['objects'] = items
         return result
 
     def getChild(self, ident, request):
@@ -88,8 +89,7 @@ class TorResource(resource.Resource):
         This method calls :meth:`get_by_id` with the url parameter as
         identifier.
         '''
-        error = self.check_torstate()
-        if error is None:
+        if self._config.state is not None:
             if not ident:
                 return resource.NoResource("Empty identifier.")
             try:
@@ -100,41 +100,34 @@ class TorResource(resource.Resource):
                 return resource.NoResource("Resource doesn't exist.")
             return self.detail_class(item, self.json_detail_class)
         else:
-            return response.JsonError("Not ready", error)
+            return response.JsonError("Not ready", "State unknown.")
 
-    def get_torstate(self):
+    def __get_torstate(self):
+        '''
+        Returns the tor state
+        '''
         return self._config.state
 
-    def set_torstate(self, state):
+    def __set_torstate(self, state):
+        '''
+        Sets the tor state
+        '''
         self._config.state = state
 
-    torstate = property(get_torstate, set_torstate)
-
-    def check_torstate(self):
-        if self._config.state is None:
-            return "Tor state is unknown."
-
-    @property
-    def configuration(self):
-        return self._config.configuration
-
-
-class CallOnRender(object):
-
-    def __init__(self, method):
-        self.method = method
-
-    @response.json
-    def __call__(self, request):
-        self.object[self.method]()
-        return {}
+    torstate = property(__get_torstate, __set_torstate,
+                        doc="The txtorcon.TorState")
 
 
 class TorResourceDetail(resource.Resource):
-
+    '''
+    Base class for all resource details.
+    Objects of this class are returned by :meth:`TorResource.getChil` by
+    default.
+    '''
     isLeaf = True
 
     def __init__(self, obj, json_class):
+        resource.Resource.__init__(self)
         self.object = obj
         self.json_class = json_class
 

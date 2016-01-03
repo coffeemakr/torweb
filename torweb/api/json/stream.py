@@ -4,13 +4,16 @@ JSON stream wrapper.
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-from .base import JsonObject
+from .base import JsonObjectWrapper
 from .circuit import JsonCircuitMinimal
 
 __all__ = ('JsonStream',)
 
 
-class JsonStream(JsonObject):
+class JsonStream(JsonObjectWrapper):
+    '''
+    Json wrapper for stream objects.
+    '''
     attributes = (
         'id',
         'state',

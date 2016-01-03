@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, with_statement
 
-from twisted.web import resource
-from torweb.api.util import response, request
 import json
-from twisted.web import server
 import re
-from .instanceconfig import TorInstanceConfig
-from torweb.api.json.configuration import JsonConfig, JsonConfigMinimal
+
+from twisted.web import server
+
+from torweb.api.util import response, request
+from torweb.api.json import configuration
 from .base import TorResource, TorResourceDetail
 
 __all__ = ('ConfigurationRoot', 'Configuration')
@@ -18,14 +19,18 @@ class ConfigObject(object):
     '''
     Wrapper for configuration values.
     '''
+    #: The :class:`txtorcon.Toconfig` configuration object
+    config = None
+
+    #: The name of the configuration entry
+    name = None
+
+    #: The identifier is the same as the name
+    id = None
 
     def __init__(self, name, config):
-
-        #: The :class:`txtorcon.Toconfig` configuration object
         self.config = config
-        #: The name of the configuration entry
         self.name = name
-        #: The identifier is the same as the name
         self.id = name
 
     @property
@@ -94,6 +99,7 @@ class Configuration(TorResourceDetail):
             '''
             Called on success.
             '''
+            print(args)
             request.write(self.render_GET(request))
             request.finish()
 
@@ -109,9 +115,9 @@ class ConfigurationRoot(TorResource):
 
     detail_class = Configuration
 
-    json_list_class = JsonConfigMinimal
+    json_list_class = configuration.JsonConfigMinimal
 
-    json_detail_class = JsonConfig
+    json_detail_class = configuration.JsonConfig
 
     def get_list(self):
         '''

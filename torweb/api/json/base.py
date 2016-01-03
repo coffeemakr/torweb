@@ -5,8 +5,9 @@ import json
 import datetime
 import txtorcon
 from txtorcon.util import ipaddr as ipaddress
+import zope.interface
 
-__all__ = ('JsonObject',)
+__all__ = ('JsonObjectWrapper', 'IJSONSerializable')
 
 
 IPADDRESSES = (ipaddress.IPv4Address,
@@ -14,10 +15,29 @@ IPADDRESSES = (ipaddress.IPv4Address,
                ipaddress.IPAddress)
 
 
-class JsonObject(object):
+class IJSONSerializable(zope.interface.Interface):
+    '''
+    Interface for all serializeable objects
+    '''
+
+    def as_dict(self):
+        '''
+        Returns the objects as a serializable dictionary
+        '''
+
+    def json(self):
+        '''
+        Returns a JSON string.
+        '''
+
+
+class JsonObjectWrapper(object):
     '''
     Base class for serializeable object wrappers.
     '''
+
+    zope.interface.implements(IJSONSerializable)
+
     #: List or tuple of tuples with two values:
     #: The old and the new attribute name.
     rename = ()
@@ -35,6 +55,8 @@ class JsonObject(object):
         result = {}
         for attr in self.attributes:
             value = getattr(self.object, attr)
+            if IJSONSerializable.providedBy(value):
+                value = value.as_dict()
             if isinstance(value, datetime.datetime):
                 value = value.isoformat()
             elif isinstance(value, txtorcon.util.NetLocation):
