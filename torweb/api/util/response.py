@@ -1,22 +1,31 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, with_statement
 
-import json as j
+from .encoder import JSONEncoder, get_encoder
 from twisted.web import server
 
 from twisted.web import resource
 
 
-def json(func):
-    def new_func(*args):
+def encode(func):
+    def new_func(*args, **kwargs):
         request = args[-1]
-        request.responseHeaders.addRawHeader(
-            "content-type", "application/json")
-        result = func(*args)
-        if result != server.NOT_DONE_YET:
-            if not type(result) == str:
-                result = j.dumps(result).encode('utf8')
-        return result
+        encoder = None
+        if request.requestHeaders.hasHeader('accept'):
+            header = request.requestHeaders.getRawHeaders('accept')[0]
+            encoder = get_encoder(header)
+        if encoder is None:
+            error = NotAcceptable()
+            return error.render(request)
+            args = args[1:]
+        else:
+            result = func(*args, **kwargs)
+            if result != server.NOT_DONE_YET:
+                if not type(result) in (str, unicode):
+                    result = encoder.dumps(result)
+                request.setHeader(b"content-type", encoder.full_type)
+            return result
+
     new_func.__doc__ = func.__doc__
     return new_func
 
@@ -54,13 +63,14 @@ def send_json(response, data):
     response.finish()
 
 
-class JsonError(resource.Resource):
+class Error(resource.Resource):
     '''
     Resource class which can be returned by :meth:`resource.Resource.getChild`
     and is rendered to a JSON error on GET.
     '''
     message = None
     name = None
+    code = 500
 
     def __init__(self, message=None, name=None):
         resource.Resource.__init__(self)
@@ -69,11 +79,12 @@ class JsonError(resource.Resource):
         if name is not None:
             self.name = name
 
-    @json
-    def render_GET(self, request):
+    @encode
+    def render(self, request):
         '''
-        Returns the json error.
+        Returns the error.
         '''
+        request.setResponseCode(self.code)
         return error(self.name, self.message)
 
     def getChild(self, child, request):
@@ -82,3 +93,34 @@ class JsonError(resource.Resource):
         "grand-parents".
         '''
         return self
+
+JsonError = Error
+
+
+class NoResource(Error):
+    name = "No Such Resource"
+    message = "Sorry. No luck finding that resource."
+    code = 404
+
+
+class UnsuportedMediaTypeError(Error):
+    message = "Media Type not supported"
+    name = "Unsuported Media Type"
+    code = 415
+
+
+class NotAcceptable(Error):
+
+    name = "Not Acceptable"
+    message = "Cannot generate accepted output"
+    code = 406
+
+    def render(self, request):
+        '''
+        Overrides the super method so it doesn't
+        try to encode the content.
+        '''
+        request.setResponseCode(self.code)
+        encoder = JSONEncoder(b'application/json', 'charset=utf-8')
+        request.setHeader(b"content-type", encoder.full_type)
+        return encoder.dumps(error(self.name, self.message))

@@ -8,4 +8,4 @@ div(ng-if="!content.error")
         span(ng-if="instance.connected").label.label-pill.label-success.pull-xs-right Connected
         span(ng-if="!instance.connected").label.label-pill.label-danger.pull-xs-right Connection failed
       p.list-group-item-text
-        | Port {{instance.port}}, Host {{instance.host}}
+        | Port {{instance.control_port}}, Host {{instance.host}}

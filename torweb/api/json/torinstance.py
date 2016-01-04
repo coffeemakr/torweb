@@ -14,7 +14,7 @@ class JsonTorInstance(JsonObjectWrapper):
     JSON wrapper for a single tor instance.
     '''
     attributes = ('id', 'connected', 'host',
-                  'port', 'connection_error', 'configuration', 'dns_port')
+                  'control_port', 'connection_error', 'dns_port')
 
     @staticmethod
     def _set_json_error(dictionary):
@@ -38,4 +38,5 @@ class JsonTorInstanceMinimal(JsonTorInstance):
     '''
     Minimal JSON wrapper for a tor instance.
     '''
-    attributes = ('id', 'connected', 'host', 'port', 'connection_error')
+    attributes = ('id', 'connected', 'host',
+                  'control_port', 'connection_error')

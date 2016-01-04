@@ -1,7 +1,7 @@
 include includes/error
 div(ng-if="!content.error")
   h1 Streams
-  .table-responsive
+  .table-responsive(ng-if="streams")
     table.table.table-striped
       thead
         th Id

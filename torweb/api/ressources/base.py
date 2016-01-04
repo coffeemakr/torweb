@@ -94,7 +94,7 @@ class TorResource(resource.Resource):
         if self.detail_class is None:
             self.detail_class = TorResourceDetail
 
-    @response.json
+    @response.encode
     def render_GET(self, request):
         '''
         Renders a json list of all children.
@@ -124,16 +124,16 @@ class TorResource(resource.Resource):
         '''
         if self._config.state is not None:
             if not ident:
-                return resource.NoResource("Empty identifier.")
+                return response.NoResource("Empty identifier.")
             try:
                 item = self.get_by_id(ident)
             except ValueError:
-                return resource.NoResource("Invalid identifier.")
+                return response.NoResource("Invalid identifier.")
             if item is None:
-                return resource.NoResource("Resource doesn't exist.")
+                return response.NoResource("Resource doesn't exist.")
             return self.detail_class(item, self.json_detail_class)
         else:
-            return response.JsonError("Not ready", "State unknown.")
+            return response.Error("Not ready", "State unknown.")
 
 
 class TorResourceDetail(resource.Resource):
@@ -160,7 +160,7 @@ class TorResourceDetail(resource.Resource):
         self.object = obj
         self.json_class = json_class
 
-    @response.json
+    @response.encode
     def render_GET(self, request):
         '''
         Uses :attr:`json_class` to serialize :attr:`object`.

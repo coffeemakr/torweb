@@ -34,7 +34,7 @@ class TorInstance(resource.Resource):
     '''
 
     #: Tor control port
-    port = None
+    control_port = None
 
     #: Tor control host
     host = None
@@ -58,7 +58,7 @@ class TorInstance(resource.Resource):
         self._logs = []
 
         self.host = None
-        self.port = None
+        self.control_port = None
 
         if password is not None:
             self.password = password
@@ -89,7 +89,7 @@ class TorInstance(resource.Resource):
             port = self.dns_port
             if port is None:
                 msg = "Tor instance has not DNSPort."
-                return response.JsonError(message=msg, name="No DNS")
+                return response.encodeError(message=msg, name="No DNS")
             else:
                 self.dns.config.resolver = client.Resolver(
                     servers=[(self.host, port)])
@@ -108,17 +108,18 @@ class TorInstance(resource.Resource):
         '''
         self._log(message)
 
-    def connect(self, port, host='127.0.0.1'):
+    def connect(self, control_port, host='127.0.0.1'):
         '''
         Connect to a running tor process.
 
-        :param port: The control port.
+        :param control_port: The control port.
         :param host: The host on which the tor process runs.
         '''
         self.host = host
-        self.port = port
+        self.control_port = control_port
         self.connected = False
-        endpoint = endpoints.TCP4ClientEndpoint(reactor, self.host, self.port)
+        endpoint = endpoints.TCP4ClientEndpoint(
+            reactor, self.host, self.control_port)
         protocol_factory = txtorcon.TorProtocolFactory(
             password_function=self._password_callback)
         defered = endpoint.connect(protocol_factory)
@@ -188,7 +189,7 @@ class TorInstance(resource.Resource):
         if getattr(config, "ControlPort", 0) == 0:
             raise ValueError("ControlPort has to be set to a non-zero value.")
 
-        self.port = config.ControlPort
+        self.control_port = config.ControlPort
         self.host = "127.0.0.1"
 
         defered = txtorcon.launch_tor(config=config, reactor=reactor)
@@ -246,18 +247,6 @@ class TorInstance(resource.Resource):
         '''
         return self.state is not None
 
-    @property
-    def configuration(self):
-        '''
-        Returns iterable.
-        '''
-        if self._config.configuration is not None:
-            configs = []
-            for name, value in self._config.configuration.config_args():
-                configs.append({"name": name, "value": value})
-            return configs
-        return None
-
     def __set_id(self, ident):
         '''
         Sets the identifiert of this instance.
@@ -282,7 +271,7 @@ class TorInstance(resource.Resource):
 
     id = property(__get_id, __set_id)
 
-    @response.json
+    @response.encode
     def render_GET(self, request):
         '''
         Renders this instance as JSON.
@@ -328,7 +317,7 @@ class TorInstances(resource.Resource):
             password = config['password']
 
         instance = TorInstance(password=password)
-        instance.connect(port=port, host=host)
+        instance.connect(port, host)
         return instance
 
     def getChild(self, torInstance, *args):
@@ -337,9 +326,9 @@ class TorInstances(resource.Resource):
         '''
         if torInstance in self.instances:
             return self.instances[torInstance]
-        return resource.NoResource("Instances does not exist.")
+        return response.NoResource("Instances does not exist.")
 
-    @response.json
+    @response.encode
     def render_GET(self, *args):
         '''
         Returns an instance as JSON
@@ -349,7 +338,7 @@ class TorInstances(resource.Resource):
             result.append(JsonTorInstanceMinimal(instance).as_dict())
         return {'objects': result}
 
-    @response.json
+    @response.encode
     @request.json
     def render_PUT(self, *args):
         '''

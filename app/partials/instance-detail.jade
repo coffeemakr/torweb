@@ -4,15 +4,19 @@ div(ng-if="!content.error")
   h2 Connection &nbsp;
     span(ng-if="instance.connected === true").label.label-pill.label-success Succeeded
     span(ng-if="instance.connected === false").label.label-pill.label-danger Failed
-  .row(ng-if="instance.connection_error")
-    .col-sm-1
+  .row.alert.alert-danger(ng-if="instance.connection_error")
+    .col-sm-2
       strong Error
-    .col-sm-11 {{instance.connection_error.message}}
+    .col-sm-10 {{instance.connection_error.message}}
   .row
-    .col-sm-1
-      strong Port
-    .col-sm-11 {{instance.port}}
-  .row
-    .col-sm-1
+    .col-sm-2
       strong Host
-    .col-sm-11 {{instance.host}}
+    .col-sm-10 {{instance.host}}
+  .row
+    .col-sm-2
+      strong Control Port
+    .col-sm-10 {{instance.control_port}}
+  .row(ng-if="instance.dns_port")
+    .col-sm-2
+      strong DNS Port
+    .col-sm-10 {{instance.dns_port}}

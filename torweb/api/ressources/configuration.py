@@ -89,7 +89,7 @@ class Configuration(TorResourceDetail):
         setattr(self.object.config, self.object.name, value)
         return self.object.config.save()
 
-    @response.json
+    @response.encode
     @request.json
     def render_POST(self, request):
         '''

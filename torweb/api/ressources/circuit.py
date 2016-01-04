@@ -21,7 +21,7 @@ class Circuit(TorResourceDetail):
       * `DELETE`:  Close the circuit (see :meth:`render_DELETE`)
     '''
 
-    @response.json
+    @response.encode
     def render_DELETE(self, request):
         '''
         Closes the circuit

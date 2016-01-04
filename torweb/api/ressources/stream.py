@@ -14,7 +14,7 @@ class Stream(TorResourceDetail):
     '''
     Stream resource which allows rendering and closing of a stream.
     '''
-    @response.json
+    @response.encode
     def render_DELETE(self, request):
         '''
         Closes the stream.

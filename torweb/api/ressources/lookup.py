@@ -181,7 +181,7 @@ class DNSLookup(DNSResource):
         result = response.error_tb(error)
         response.send_json(request, result)
 
-    @response.json
+    @response.encode
     def render_GET(self, request):
         '''
         Renders a GET request.
