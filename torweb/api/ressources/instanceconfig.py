@@ -17,7 +17,4 @@ class TorInstanceConfig(object):
     protocol = None
 
     def __init__(self):
-        '''
-        Create new instance
-        '''
         self.state_built = defer.Deferred()

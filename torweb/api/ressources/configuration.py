@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+'''
+This module contains resources to modify the tor configuration as 
+by RESTful API calls.
+
+ * `GET ../config`: Lists all configuration 
+   (see :meth:`ConfigurationRoot.render_GET`).
+ * `GET ../config/<ConfigId>`: Get details of a single entry 
+   (see :meth:`Configuration.render_GET`).
+ * `POST ../config/<ConfigId>`: Change the value
+   (see :meth:`Configuration.render_POST`).
+
+'''
 from __future__ import absolute_import, print_function, with_statement
 
 import json
@@ -13,15 +25,19 @@ from torweb.api.util import response, request
 from torweb.api.json import configuration
 from .base import TorResource, TorResourceDetail, ITorResource
 
-__all__ = ('ConfigurationRoot', 'Configuration')
+__all__ = ('ConfigurationRoot', 'Configuration', 'ConfigurationEntry')
 
 ERR_CONFIG_NREADY = response.error("Not ready", "Configuration was not set.")
 
 
-class ConfigObject(object):
+class ConfigurationEntry(object):
     '''
     Wrapper for configuration values.
+
+    :param config: An instance of :class:`txtorcon.TorConfig`
+    :param name: The configuration name.
     '''
+
     #: The :class:`txtorcon.Toconfig` configuration object
     config = None
 
@@ -136,7 +152,7 @@ class ConfigurationRoot(TorResource):
 
         entries = []
         for name in self._config.configuration.config:
-            obj = ConfigObject(name, self._config.configuration)
+            obj = ConfigurationEntry(name, self._config.configuration)
             entries.append(obj)
         return entries
 
@@ -149,4 +165,4 @@ class ConfigurationRoot(TorResource):
         ident = str(ident)
         if ident not in self._config.configuration.config:
             return None
-        return ConfigObject(ident, self._config.configuration)
+        return ConfigurationEntry(ident, self._config.configuration)

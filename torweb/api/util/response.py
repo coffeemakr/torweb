@@ -17,8 +17,8 @@ def json(func):
             if not type(result) == str:
                 result = j.dumps(result).encode('utf8')
         return result
+    new_func.__doc__ = func.__doc__
     return new_func
-
 
 def error(name, message):
     '''

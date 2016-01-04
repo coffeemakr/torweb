@@ -63,6 +63,9 @@ html: $(HTML)
 doc: $(PYTHON_DOC_PACKAGES)
 	$(MAKE) -C doc/ html
 
+open-doc: doc
+	firefox doc/_build/html/index.html
+
 # Bower components
 .PHONY: components
 components: $(BOWER_COMPONENTS)

@@ -10,7 +10,7 @@ from torweb.api.util import response
 from torweb.api.json.base import IJSONSerializable
 import zope.interface
 
-__all__ = ('TorResource', 'TorResourceDetail')
+__all__ = ('ITorResource', 'TorResource', 'TorResourceDetail')
 
 
 class ITorResource(zope.interface.Interface):
@@ -142,13 +142,27 @@ class TorResourceDetail(resource.Resource):
     Objects of this class are returned by :meth:`TorResource.getChil` by
     default.
     '''
+    #: Is leaf because detail resources cannot have children.
     isLeaf = True
 
+    #: The object which contains all information
+    object = None
+
+    #: The class which can be used to serialize the object.
+    json_class = None
+
     def __init__(self, obj, json_class):
+        '''
+        :param obj: Sets :attr:`object`
+        :param json_class: A class which can serialize the :attr:`object`.
+        '''
         resource.Resource.__init__(self)
         self.object = obj
         self.json_class = json_class
 
     @response.json
     def render_GET(self, request):
+        '''
+        Uses :attr:`json_class` to serialize :attr:`object`.
+        '''
         return self.json_class(self.object).as_dict()
