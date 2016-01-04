@@ -3,6 +3,8 @@ PYPACKAGE=torweb
 PY_SOURCES=$(shell find $(PYPACKAGE)/ -type f -name '*.py')
 STATIC_DIR=app
 
+VERSION = $(shell python setup.py --version)
+
 JADE_SRC=$(wildcard $(STATIC_DIR)/*.jade) $(wildcard $(STATIC_DIR)/partials/*.jade)
 HTML=${JADE_SRC:%.jade=%.html}
 
@@ -48,6 +50,11 @@ GIT_PRECOMMIT_HOOK=$(GIT_HOOK_DIR)/pre-commit
 
 .PHONY: all
 all: $(HTML) $(BOWER_COMPONENTS) $(PYTHON_PACKAGES)
+
+# Print version
+.PHONY: _version
+_version:
+	@echo ${VERSION}
 
 .PHONY: dev_requirements
 dev_requirements: $(NPM_TARGET) $(PYTHON_PACKAGES) $(PYTHON_DEV_PACKAGES)
@@ -100,6 +107,7 @@ venv/.%: %
 # cleanup
 .PHONY: clean
 clean: clean_html clean_npm clean_components
+	rm -rf .tox 
 
 .PHONY: clean_html
 clean_html:
@@ -140,13 +148,6 @@ pep8: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
 
 .PHONY: pylint
 pylint: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
-	$(PYLINT) $(PYPACKAGE)
-	$(PYLINT) $(PYPACKAGE)
-	$(PYLINT) $(PYPACKAGE)
-	$(PYLINT) $(PYPACKAGE)
-	$(PYLINT) $(PYPACKAGE)
-	$(PYLINT) $(PYPACKAGE)
-	$(PYLINT) $(PYPACKAGE)
 	$(PYLINT) $(PYPACKAGE)
 	
 .PHONY: pyflakes

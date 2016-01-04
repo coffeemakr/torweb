@@ -1,5 +1,5 @@
 
-from .encoder import JSONEncoder, get_encoder
+from .encoder import get_encoder
 from .response import UnsuportedMediaTypeError
 
 

@@ -1,5 +1,5 @@
 
-import json as j
+import json
 
 import zope.interface
 
@@ -48,10 +48,10 @@ class JSONEncoder(BaseEncoder):
 
     def loads(self, content):
         content = content.decode('utf-8')
-        return j.loads(content)
+        return json.loads(content)
 
     def dumps(self, content):
-        return j.dumps(content).encode('utf-8')
+        return json.dumps(content).encode('utf-8')
 
 
 _HTML_WRAPPER = '''
@@ -110,8 +110,8 @@ class HTML5Encoder(BaseEncoder):
             message = content['error']['message']
             return _HTML_ERROR_WRAPPER.format(name=name, message=message)
 
-        data = j.dumps(content, separators=(',', ': '),
-                       indent=4).encode('utf-8')
+        data = json.dumps(content, separators=(',', ': '),
+                          indent=4).encode('utf-8')
         return _HTML_WRAPPER.format(data)
 
 

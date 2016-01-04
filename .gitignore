@@ -61,7 +61,7 @@ target/
 *.html
 
 # bower & npm components
-app/components/
+torweb/app/components
 node_modules/
 
 # Python virtual environment

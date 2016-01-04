@@ -80,7 +80,7 @@ class MyServerProtocol(WebSocketServerProtocol):
         '''
         json_stream = JsonStream(stream).as_dict()
 
-        if 'circuit' in json_stream and json_stream['circuit'] == None:
+        if 'circuit' in json_stream and json_stream['circuit'] is None:
             # Don't send removed circuit
             del json_stream['circuit']
 

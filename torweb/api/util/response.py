@@ -58,8 +58,9 @@ def send_json(response, data):
     '''
     Write an JSON object to the response stream.
     '''
-    data = j.dumps(data).encode('utf8')
-    response.write(data)
+    encoder = JSONEncoder('application/json')
+    json_data = encoder.dumps(data)
+    response.write(json_data)
     response.finish()
 
 

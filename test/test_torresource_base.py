@@ -5,7 +5,7 @@ from twisted.trial import unittest
 from torweb.api.ressources import base, instanceconfig
 from .util import DummyTorState, render
 from twisted.web.test.test_web import DummyRequest
-from twisted.web.resource import NoResource
+from torweb.api.util.response import NoResource
 from twisted.internet.defer import inlineCallbacks
 import json
 from torweb.api.json import base as jsonbase
@@ -46,6 +46,9 @@ class TestTorResourceBase(unittest.TestCase):
         self.torstate = DummyTorState()
         self.instanceconfig = instanceconfig.TorInstanceConfig()
         self.instanceconfig.state = self.torstate
+        self.request = DummyRequest([''])
+        self.request.requestHeaders.addRawHeader(
+            'accept', 'application/json;charset=utf-8')
 
     def test_json_list_class_not_set(self):
         '''
@@ -133,9 +136,8 @@ class TestTorResourceBase(unittest.TestCase):
             def get_by_id(self, ident):
                 return ident
 
-        request = DummyRequest([''])
         r = TorResourceWithJson1(self.instanceconfig)
-        child = r.getChildWithDefault('1', request)
+        child = r.getChildWithDefault('1', self.request)
         self.assertIsInstance(child, base.TorResourceDetail)
 
     def test_custom_detail_class(self):
@@ -151,9 +153,8 @@ class TestTorResourceBase(unittest.TestCase):
             def get_by_id(self, ident):
                 return ident
 
-        request = DummyRequest([''])
         r = TorResourceWithJson1(self.instanceconfig)
-        child = r.getChildWithDefault('1', request)
+        child = r.getChildWithDefault('1', self.request)
         self.assertIsInstance(child, A)
 
     def test_invalid_identifier(self):
@@ -162,9 +163,8 @@ class TestTorResourceBase(unittest.TestCase):
             def get_by_id(self, ident):
                 raise ValueError
 
-        request = DummyRequest([''])
         r = LocalTorResource(self.instanceconfig)
-        child = r.getChildWithDefault('1', request)
+        child = r.getChildWithDefault('1', self.request)
         self.assertIsInstance(child, NoResource)
 
     def test_empty_identifier(self):
@@ -175,9 +175,8 @@ class TestTorResourceBase(unittest.TestCase):
             def get_by_id(self, ident):
                 parent.fail("get_by_id called")
 
-        request = DummyRequest([''])
         r = LocalTorResource(self.instanceconfig)
-        child = r.getChildWithDefault('', request)
+        child = r.getChildWithDefault('', self.request)
         self.assertIsInstance(child, NoResource)
 
     def test_unexisting_identifier(self):
@@ -187,9 +186,8 @@ class TestTorResourceBase(unittest.TestCase):
             def get_by_id(self, ident):
                 return None
 
-        request = DummyRequest([''])
         r = LocalTorResource(self.instanceconfig)
-        child = r.getChildWithDefault('1', request)
+        child = r.getChildWithDefault('1', self.request)
         self.assertIsInstance(child, NoResource)
 
     @inlineCallbacks
@@ -199,17 +197,16 @@ class TestTorResourceBase(unittest.TestCase):
             def get_list(self):
                 return range(100)
 
-        request = DummyRequest([''])
-        request.responseCode = 200
+        self.request.responseCode = 200
         resource = LocalTorResource(self.instanceconfig)
-        d = yield render(resource, request)
+        d = yield render(resource, self.request)
 
-        self.assertEquals(request.responseCode, 200,
-                          msg=request.responseCode)
-        payload = ''.join(request.written)
+        self.assertEquals(self.request.responseCode, 200,
+                          msg=self.request.responseCode)
+        payload = ''.join(self.request.written)
         payload = json.loads(payload.decode('utf-8'))
         self.assertIsInstance(payload, dict)
-        self.assertTrue('objects' in payload)
+        self.assertTrue('objects' in payload, msg="Didn't receive objects: {}".format(payload))
         self.assertTrue(len(payload['objects']) == 100)
         for i, item in enumerate(payload['objects']):
             self.assertTrue('object' in item)
@@ -223,14 +220,13 @@ class TestTorResourceBase(unittest.TestCase):
             def get_list(self):
                 return range(100)
 
-        request = DummyRequest([''])
-        request.responseCode = 200
+        self.request.responseCode = 200
         resource = LocalTorResource()
-        d = yield render(resource, request)
+        d = yield render(resource, self.request)
 
-        self.assertEquals(request.responseCode, 200,
-                          msg=request.responseCode)
-        payload = ''.join(request.written)
+        self.assertEquals(self.request.responseCode, 200,
+                          msg=self.request.responseCode)
+        payload = ''.join(self.request.written)
         payload = json.loads(payload.decode('utf-8'))
         self.assertIsInstance(payload, dict)
         self.assertTrue('error' in payload, msg=payload)
@@ -241,22 +237,24 @@ class TestTorResourceBase(unittest.TestCase):
             def get_by_id(self, ident):
                 raise RuntimeError("called")
 
-        request = DummyRequest([''])
-        request.responseCode = 200
+        self.request.responseCode = 200
         resource = LocalTorResource()
-        child = resource.getChildWithDefault('1', request)
+        child = resource.getChildWithDefault('1', self.request)
         self.assertIsInstance(child, response.JsonError)
 
 
 class TestTorResourceDetail(unittest.TestCase):
+    def setUp(self):
+        self.request = DummyRequest([''])
+        self.request.requestHeaders.addRawHeader(
+            'accept', 'application/json;charset=utf-8')
 
     def test_render(self):
         r = base.TorResourceDetail(1, JsonClass)
-        request = DummyRequest([])
-        d = render(r, request)
+        d = render(r, self.request)
 
         def checkResult(*args):
-            payload = ''.join(request.written)
+            payload = ''.join(self.request.written)
             payload = json.loads(payload.decode('utf-8'))
             self.assertIsInstance(payload, dict)
             self.assertEqual(payload['object'], 1)

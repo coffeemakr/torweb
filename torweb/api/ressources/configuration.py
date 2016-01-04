@@ -14,7 +14,6 @@ by RESTful API calls.
 from __future__ import absolute_import, print_function, with_statement
 
 import json
-import re
 
 from twisted.web import server
 

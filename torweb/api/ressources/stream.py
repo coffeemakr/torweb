@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, with_statement
 
-from twisted.web import resource
 import zope.interface
 from .base import TorResource, TorResourceDetail, ITorResource
 from torweb.api.util import response

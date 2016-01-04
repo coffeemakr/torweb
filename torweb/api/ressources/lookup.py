@@ -5,7 +5,6 @@ from twisted.web import resource
 from torweb.api.util import response
 from twisted.web import server
 from twisted.names import dns
-import json
 
 __all__ = ('DNSRoot', 'ReverseDNS')
 

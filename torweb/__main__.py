@@ -5,6 +5,7 @@ Execution of package
 
 from __future__ import absolute_import, print_function, with_statement
 
-from .server import main
+from . import server
+import sys
 
-main()
+server.main(sys.argv)
