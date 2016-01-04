@@ -416,8 +416,15 @@ torstatServices
 			};
 			return getRessourceByName;
 	}])
-	.factory('ConfigHelp', ['$resource', function($resource){
-		return $resource('//' + window.location.host + '/app/js/confighelp.json').get();
+	.factory('ConfigHelp', ['$rootScope', '$http', '$templateCache', '$sce', function($rootScope, $http, $templateCache, $sce){
+	    var self = this;
+	    $http.get("js/confighelp.json", {cache: $templateCache}).success(function(help) {
+	     	self.help = help;
+	     	for(var name in self.help){
+	     		self.help[name].help = $sce.trustAsHtml(self.help[name].help);
+	     	}
+	    });
+	    return this;
 	}])
 	.factory('MenuHandler', ['$rootScope', '$route', '$routeParams', function($rootScope, $route, $routeParams){
 		return new MenuHandler($rootScope, $route, $routeParams);

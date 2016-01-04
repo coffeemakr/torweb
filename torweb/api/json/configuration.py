@@ -15,6 +15,7 @@ class JsonConfigMinimal(JsonObjectWrapper):
     '''
     attributes = ('id', 'value')
 
+
 class JsonConfig(JsonConfigMinimal):
     '''
     Convert config entry to json
@@ -26,5 +27,3 @@ class JsonConfig(JsonConfigMinimal):
         result = super(JsonConfig, self).as_dict()
         result['type'] = result['type'].__name__
         return result
-
-

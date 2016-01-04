@@ -3,8 +3,8 @@ div(ng-if="!content.error")
   h1 Config {{config.id}}
 
   // TODO: fix help retrieval
-  p {{getHelp(config).help}}
-
+  p {{getHelp(config)}}
+  p(ng-bind-html="config.help")
 
   form
     div(ng-if="config.is_list")
@@ -35,6 +35,6 @@ div(ng-if="!content.error")
         .col-sm-6
           input.form-control(id="value_str", name="value", type="text", ng-model="config.value")
 
-      .row
-        .col-xs-12
-          input.btn.btn-primary(type="button", ng-click="updateConfig(config)", value="Save")
+    .row
+      .col-xs-12
+        input.btn.btn-primary(type="button", ng-click="updateConfig(config)", value="Save")

@@ -134,14 +134,13 @@ class TorInstance(resource.Resource):
         self._config.protocol = protocol
         protocol.post_bootstrap.addCallback(self._connection_bootstrapped)
         protocol.post_bootstrap.addErrback(self._connection_failed)
-        
+
         self._config.state = txtorcon.TorState(protocol)
         self._config.state_built.callback(self._config.state)
-        
+
         defered = txtorcon.TorConfig.from_protocol(protocol)
         defered.addCallback(self._configuration_callback)
         defered.addErrback(self._fatal_error)
-
 
     def _fatal_error(self, error):
         '''

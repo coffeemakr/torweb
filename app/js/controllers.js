@@ -57,7 +57,9 @@ torstatControllers
 				$TorResource('config').save({instanceId: $routeParams.instanceId, configId: config.id}, {value: config.value});
 			};
 			$scope.getHelp = function(config){
-				return ConfigHelp[config.id];
+				if(config.id && ConfigHelp.help){
+					angular.extend(config, ConfigHelp.help[config.id]);
+				}
 			}
 			$scope.guessHostname = function(ip, streams){
 				for (var i = streams.length - 1; i >= 0; i--) {
