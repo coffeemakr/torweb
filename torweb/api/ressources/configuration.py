@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 '''
-This module contains resources to modify the tor configuration as 
+This module contains resources to modify the tor configuration as
 by RESTful API calls.
 
- * `GET ../config`: Lists all configuration 
+ * `GET ../config`: Lists all configuration
    (see :meth:`ConfigurationRoot.render_GET`).
- * `GET ../config/<ConfigId>`: Get details of a single entry 
+ * `GET ../config/<ConfigId>`: Get details of a single entry
    (see :meth:`Configuration.render_GET`).
  * `POST ../config/<ConfigId>`: Change the value
    (see :meth:`Configuration.render_POST`).

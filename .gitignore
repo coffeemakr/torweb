@@ -53,7 +53,7 @@ _trial_temp/
 
 # Sphinx documentation
 docs/_build/
-
+doc/_build
 # PyBuilder
 target/
 

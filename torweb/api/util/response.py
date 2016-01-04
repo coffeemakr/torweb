@@ -20,6 +20,7 @@ def json(func):
     new_func.__doc__ = func.__doc__
     return new_func
 
+
 def error(name, message):
     '''
     Returns a serializeable dict containing the error message and the
