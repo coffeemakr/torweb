@@ -3,6 +3,7 @@ dist: precise
 
 env:
   - TOX_ENV=py27
+  - TOX_ENV=flake8
 install:
   - make python_packages
   - make python_dev_packages
