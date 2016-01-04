@@ -44,18 +44,15 @@ class TorInstance(resource.Resource):
 
     #: Set to true if the instance is connected to the running tor process
     connected = False
-
-    _protocol = None
-
     circuits = None
     routers = None
     streams = None
     configs = None
+    password = None
 
     def __init__(self, password=None):
         resource.Resource.__init__(self)
         self._config = TorInstanceConfig()
-        self._password = None
         self._id = None
         self._config.configuration = None
         self._logs = []
@@ -134,13 +131,17 @@ class TorInstance(resource.Resource):
         This method builds the :attr:`state` from the provided
         protocol.
         '''
-        self._protocol = protocol
-        protocol.post_bootstrap.addErrback(self._connection_failed)
+        self._config.protocol = protocol
         protocol.post_bootstrap.addCallback(self._connection_bootstrapped)
-        protocol.post_bootstrap.addErrback(self._fatal_error)
+        protocol.post_bootstrap.addErrback(self._connection_failed)
+        
         self._config.state = txtorcon.TorState(protocol)
         self._config.state_built.callback(self._config.state)
-        return protocol
+        
+        defered = txtorcon.TorConfig.from_protocol(protocol)
+        defered.addCallback(self._configuration_callback)
+        defered.addErrback(self._fatal_error)
+
 
     def _fatal_error(self, error):
         '''
@@ -170,9 +171,6 @@ class TorInstance(resource.Resource):
         self.connected = True
         self.connection_error = None
         print("Connection succeeded: %s " % args)
-        defered = txtorcon.TorConfig.from_connection(self._protocol)
-        defered.addCallback(self._configuration_callback)
-        defered.addErrback(self._fatal_error)
         return args
 
     def _bootstrap_failed(self, error):
@@ -218,22 +216,7 @@ class TorInstance(resource.Resource):
         self.configs.configuration = config
 
     def _password_callback(self):
-        return self._password
-
-    def __get_password(self):
-        '''
-        The password to authenticate on the tor control port.
-        '''
-        return self._password
-
-    def __set_password(self, password):
-        '''
-        Set the password.
-        '''
-        self._password = password
-
-    password = property(__get_password, __set_password,
-                        doc="Password")
+        return self.password
 
     @property
     def dns_port(self):

@@ -5,8 +5,8 @@ var torstatControllers = angular.module('torstatControllers',[]);
 
 torstatControllers
 	.controller('TorRessourceCtrl', 
-	   			['TorstatWebsocket', '$scope', '$rootScope', 'MenuHandler', '$location', '$routeParams', '$TorResource', '$route', 'OnionooRouter', 'DNSLookup',
-		function(TorstatWebsocket,    $scope,   $rootScope,   MenuHandler,   $location,   $routeParams,   $TorResource,   $route,   OnionooRouter,   DNSLookup) {
+	   			['TorstatWebsocket', '$scope', '$rootScope', 'MenuHandler', '$location', '$routeParams', '$TorResource', '$route', 'OnionooRouter', 'DNSLookup', 'ConfigHelp',
+		function(TorstatWebsocket,    $scope,   $rootScope,   MenuHandler,   $location,   $routeParams,   $TorResource,   $route,   OnionooRouter,   DNSLookup, ConfigHelp) {
 			MenuHandler.setCurrent($route.current.$$route.originalPath);
 			MenuHandler.setArgs($routeParams);
 
@@ -56,7 +56,9 @@ torstatControllers
 			$scope.updateConfig = function(config){
 				$TorResource('config').save({instanceId: $routeParams.instanceId, configId: config.id}, {value: config.value});
 			};
-
+			$scope.getHelp = function(config){
+				return ConfigHelp[config.id];
+			}
 			$scope.guessHostname = function(ip, streams){
 				for (var i = streams.length - 1; i >= 0; i--) {
 					var stream = streams[i];

@@ -8,10 +8,10 @@ from twisted.web import server
 
 import zope.interface
 
+import txtorcon
 from torweb.api.util import response, request
 from torweb.api.json import configuration
 from .base import TorResource, TorResourceDetail, ITorResource
-
 
 __all__ = ('ConfigurationRoot', 'Configuration')
 
@@ -48,12 +48,14 @@ class ConfigObject(object):
         '''
         Returns a string of the value type.
         '''
-        name = type(self.value).__name__
-        if name == '_ListWrapper':
-            name = 'list'
-        elif name == 'unicode':
-            name = 'str'
-        return name
+        return self.config.get_type(self.name)
+
+    @property
+    def is_list(self):
+        '''
+        Is :const:`True` if the value is a list.
+        '''
+        return txtorcon.torconfig.is_list_config_type(self.value_type)
 
 
 class Configuration(TorResourceDetail):
@@ -67,7 +69,7 @@ class Configuration(TorResourceDetail):
         '''
         if isinstance(value, bool):
             value = int(value)
-
+        # TODO: Catch errors here
         setattr(self.object.config, self.object.name, value)
         return self.object.config.save()
 

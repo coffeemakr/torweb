@@ -14,6 +14,8 @@ class TorInstanceConfig(object):
     #: :class:`txtorcon.TorConfig` instance
     configuration = None
 
+    protocol = None
+
     def __init__(self):
         '''
         Create new instance

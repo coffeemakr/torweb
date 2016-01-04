@@ -1,25 +1,13 @@
 include includes/error
 div(ng-if="!content.error")
   h1 Config {{config.id}}
-  form(ng-switch="config.type")
-    .row.form-group(ng-switch-when="bool")
-      .col-sm-1
-        input.form-control(id="value_checkbox", name="value", type="checkbox", ng-model="config.value")
-      .col-sm-11
-        label.form-control-label(for="value_checkbox") {{config.id}}
 
-    .row.form-group(ng-switch-when="int")
-      .col-sm-6
-        label.form-control-label(for="value_int") {{config.id}}
-      .col-sm-6
-        input.form-control(id="value_int", name="value", type="number", ng-model="config.value")
-    .row.form-group(ng-switch-when="str")
-      .col-sm-6
-        label.form-control-label(for="value_str") {{config.id}}
-      .col-sm-6
-        input.form-control(id="value_str", name="value", type="text", ng-model="config.value")
+  // TODO: fix help retrieval
+  p {{getHelp(config).help}}
 
-    div(ng-switch-when="list")
+
+  form
+    div(ng-if="config.is_list")
       .row.input-group
         .col-lg-12
           label.form-control-label {{config.id}}
@@ -29,14 +17,24 @@ div(ng-if="!content.error")
       .row
         .col-sm-1 Preview
         .col-sm-11 {{config.value}}
+    div(ng-if="!config.is_list", ng-switch="config.type")
+      .row.form-group(ng-switch-when="Boolean")
+        .col-sm-1
+          input.form-control(id="value_checkbox", name="value", type="checkbox", ng-model="config.value")
+        .col-sm-11
+          label.form-control-label(for="value_checkbox") {{config.id}}
 
-      //.row
-        .col-lg-6
-          .input-group
-            input(type="text", class="form-control", placeholder="New value...")
-            span.input-group-btn
-              button.btn.btn-secondary(type="button") Add
-    .row(ng-switch-default) Unknown type: {{config.type}} 
-    .row
-      .col-xs-12
-        input.btn.btn-primary(type="button", ng-click="updateConfig(config)", value="Save")
+      .row.form-group(ng-switch-default)
+        .col-sm-6
+          label.form-control-label(for="value_int") {{config.id}}
+        .col-sm-6
+          input.form-control(id="value_int", name="value", type="text", ng-model="config.value")
+      .row.form-group(ng-switch-when="str")
+        .col-sm-6
+          label.form-control-label(for="value_str") {{config.id}}
+        .col-sm-6
+          input.form-control(id="value_str", name="value", type="text", ng-model="config.value")
+
+      .row
+        .col-xs-12
+          input.btn.btn-primary(type="button", ng-click="updateConfig(config)", value="Save")

@@ -416,6 +416,9 @@ torstatServices
 			};
 			return getRessourceByName;
 	}])
+	.factory('ConfigHelp', ['$resource', function($resource){
+		return $resource('//' + window.location.host + '/app/js/confighelp.json').get();
+	}])
 	.factory('MenuHandler', ['$rootScope', '$route', '$routeParams', function($rootScope, $route, $routeParams){
 		return new MenuHandler($rootScope, $route, $routeParams);
 	}])
