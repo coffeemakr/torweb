@@ -1,0 +1,6 @@
+[paths]
+source =
+    torweb
+
+[run]
+source = ./torweb

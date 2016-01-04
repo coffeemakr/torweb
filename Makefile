@@ -3,12 +3,21 @@ PYPACKAGE=torweb
 PY_SOURCES=$(shell find $(PYPACKAGE)/ -type f -name '*.py')
 STATIC_DIR=app
 
-VERSION = $(shell python setup.py --version)
+VERSION=$(shell python setup.py --version)
 
 JADE_SRC=$(wildcard $(STATIC_DIR)/*.jade) $(wildcard $(STATIC_DIR)/partials/*.jade)
 HTML=${JADE_SRC:%.jade=%.html}
 
-NPM := npm
+NPM := $(shell which npm)
+GPG := $(shell which gpg)
+
+ifeq ($(NPM),)
+  $(error NPM not found)
+endif
+
+ifeq ($(GPG),)
+  $(error GnuPG not found)
+endif
 
 VENV_DIR:=venv
 
@@ -28,7 +37,12 @@ PYLINT:=python -m pylint
 
 PIP := pip
 
-
+SETUP_PY=setup.py
+DIST_FOLDER        := dist
+BDIST_WHEEL        := $(DIST_FOLDER)/${PYPACKAGE}-$(VERSION)-py2-none-any.whl
+BDIST_WHEEL_SIGNED := ${BDIST_WHEEL}.asc
+SDIST              := $(DIST_FOLDER)/${PYPACKAGE}-$(VERSION).tar.gz
+SDIST_SIGNED       := $(SDIST).asc
 ifndef PRODUCTION
 	JADE_ARGS=--pretty
 endif
@@ -42,7 +56,9 @@ BOWER_COMPONENTS=torweb/app/components/.installed
 BOWER_SOURCE=bower.json
 
 
-SPHINXBUILD="python -m sphinx"
+PYTHON=python
+
+SPHINXBUILD="${PYTHON} -m sphinx"
 export SPHINXBUILD
 
 GIT_HOOK_DIR=.git/hooks
@@ -141,6 +157,29 @@ clean_githook:
 	rm -f $(GIT_PRECOMMIT_HOOK)
 
 precommit_test: pep8
+
+.PHONY: proper
+proper: clean
+	rm -rf $(DIST_FOLDER)
+
+.phony: bdist_wheel
+bdist_wheel: $(BDIST_WHEEL)
+bdist_wheel_signed: $(BDIST_WHEEL_SIGNED)
+
+.PHONY: sdist sdist_signed
+sdist: $(SDIST)
+sdist_signed: $(SDIST_SIGNED)
+
+
+$(SDIST):
+	$(PYTHON) $(SETUP_PY) sdist
+
+$(BDIST_WHEEL): $(SETUP_PY) $(PYTHON_DEV_PACKAGES)
+	$(PYTHON) $(SETUP_PY) bdist_wheel
+
+
+%.asc: %
+	$(GPG) --verify $@ || $(GPG) --no-version --detach-sign --armor --local-user l34k@bk.ru $<
 
 .PHONY: pep8
 pep8: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
