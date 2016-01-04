@@ -38,7 +38,7 @@ JADE=$(NODE_BIN)/jade $(JADE_ARGS)
 BOWER=$(NODE_BIN)/bower --allow-root  --config.interactive=false
 
 
-BOWER_COMPONENTS=app/components/.installed
+BOWER_COMPONENTS=torweb/app/components/.installed
 BOWER_SOURCE=bower.json
 
 
