@@ -3,9 +3,8 @@
 Execution of package
 '''
 
-from __future__ import absolute_import, print_function, with_statement
+from __future__ import absolute_import
 
-from . import server
-import sys
+import torweb.server
 
-server.main(sys.argv)
+torweb.server.main()

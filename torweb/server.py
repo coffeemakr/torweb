@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# coding=utf-8
 '''
 The server module contains the essential resources to start the webserver
 from console on via python calls.
@@ -6,7 +7,7 @@ from console on via python calls.
 Starting from Commandline
 -------------------------
 
-The server can be started by executing the module directly::
+The server can be started by e xecuting the module directly::
 
    python -m torweb
 
@@ -17,18 +18,57 @@ see all available options.
 from __future__ import absolute_import, print_function, with_statement
 
 import argparse
-import sys
 import os
+import sys
 
-from twisted.web import server
-from twisted.internet import reactor
 from twisted import python
+from twisted.internet import reactor
+from twisted.web import server
 
-from torweb import app
+from torweb import configuration as config
+from torweb import data
+
 from .torweb import TorwebResource
 
 
-def main(args):
+class TorwebConfiguration(config.Configuration):
+
+    _name_connections = 'connections'
+    _name_includes = 'include configuration'
+
+    root_entry = config.DictEntry({
+        _name_connections: config.ListEntry(config.DictEntry({
+            'name': config.StringEntry(),
+            'host': config.StringEntry(),
+            'port': config.IntegerEntry(),
+            'password': config.StringEntry()
+        })),
+        _name_includes: config.ListEntry(config.StringEntry())
+    })
+
+    @property
+    def include_configuration_files(self):
+        return self.value[self._name_includes]
+
+
+def get_configuration(filename=None):
+    if filename is None:
+        filename = data.default_configuration()
+    config = TorwebConfiguration(configfile=filename)
+
+    # TODO: implement configuration file includes
+
+    '''
+    files = config.include_configuration_files
+
+    for filename in files:
+        if os.path.isfile(filename):
+            config.read_file(filename)
+    '''
+    return config
+
+
+def main():
     '''
     Run the torweb server from command line arguments.
     '''
@@ -41,7 +81,7 @@ def main(args):
                         default='127.0.0.1')
     parser.add_argument("-t", "--tls", action="store_true",
                         help="Use TLS encryption.")
-    parser.add_argument("-c", "--config", default="connections.json",
+    parser.add_argument("-c", "--config", default="None",
                         help="Set the configuration file.")
     parser.add_argument("-k", "--private-key", default=None,
                         help=("Path to the private key in PEM "
@@ -52,12 +92,12 @@ def main(args):
     parser.add_argument(
         "-q", "--quiet", help="Don't log messages.", action="store_true")
 
-    args = parser.parse_args(args)
+    args = parser.parse_args()
 
     if not args.quiet:
         python.log.startLogging(sys.stdout)
 
-    root_folder = app.get_path()
+    root_folder = data.get_path()
 
     if args.private_key is None:
         args.private_key = os.path.join(root_folder, 'key.pem')
@@ -65,7 +105,8 @@ def main(args):
     if args.certificate is None:
         args.certificate = os.path.join(root_folder, 'cert.pem')
 
-    site = server.Site(TorwebResource())
+    torweb_resource = TorwebResource()
+    site = server.Site(torweb_resource)
 
     if args.tls:
         try:
@@ -95,4 +136,4 @@ def main(args):
     reactor.run()
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

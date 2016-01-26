@@ -15,14 +15,14 @@ from __future__ import absolute_import, print_function, with_statement
 
 import json
 
+import txtorcon
+import zope.interface
 from twisted.web import server
 
-import zope.interface
-
-import txtorcon
-from torweb.api.util import response, request
 from torweb.api.json import configuration
-from .base import TorResource, TorResourceDetail, ITorResource
+from torweb.api.util import request, response
+
+from .base import ITorResource, TorResource, TorResourceDetail
 
 __all__ = ('ConfigurationRoot', 'Configuration', 'ConfigurationEntry')
 
@@ -164,4 +164,5 @@ class ConfigurationRoot(TorResource):
         ident = str(ident)
         if ident not in self._config.configuration.config:
             return None
+
         return ConfigurationEntry(ident, self._config.configuration)

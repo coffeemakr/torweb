@@ -2,8 +2,10 @@
 from __future__ import absolute_import, print_function, with_statement
 
 import zope.interface
-from .base import TorResource, ITorResource
+
 from torweb.api.json.router import JsonRouter
+
+from .base import ITorResource, TorResource
 
 __all__ = ('RouterRoot',)
 

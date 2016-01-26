@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# coding=utf-8
+
 from __future__ import absolute_import, print_function, with_statement
 
-from .encoder import JSONEncoder, get_encoder
-from twisted.web import server
+from twisted.web import resource, server
 
-from twisted.web import resource
+from .encoder import JSONEncoder, get_encoder
 
 
 def encode(func):

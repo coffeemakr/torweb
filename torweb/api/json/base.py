@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, with_statement
 
-import json
 import datetime
+import json
+
 import txtorcon
-from txtorcon.util import ipaddr as ipaddress
 import zope.interface
+from txtorcon.util import ipaddr as ipaddress
 
 __all__ = ('JsonObjectWrapper', 'IJSONSerializable')
 

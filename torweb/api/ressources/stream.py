@@ -2,9 +2,11 @@
 from __future__ import absolute_import, print_function, with_statement
 
 import zope.interface
-from .base import TorResource, TorResourceDetail, ITorResource
-from torweb.api.util import response
+
 from torweb.api.json.stream import JsonStream
+from torweb.api.util import response
+
+from .base import ITorResource, TorResource, TorResourceDetail
 
 __all__ = ('StreamRoot',)
 

@@ -4,26 +4,23 @@ Tor instance classes.
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-
-from twisted.web import resource
-from twisted.internet import reactor, endpoints
-from twisted.names import client
-
-from autobahn.twisted.resource import WebSocketResource
 import txtorcon
-
-from .instanceconfig import TorInstanceConfig
+from autobahn.twisted.resource import WebSocketResource
+from twisted.internet import endpoints, reactor
+from twisted.names import client
+from twisted.web import resource
 
 from torweb.api import websocket
+from torweb.api.json.torinstance import JsonTorInstance, JsonTorInstanceMinimal
+from torweb.api.util import request, response
 from torweb.error import ConfigurationError
-from torweb.api.json.torinstance import JsonTorInstanceMinimal, JsonTorInstance
-from torweb.api.util import response, request
 
 from .circuit import CircuitRoot
-from .router import RouterRoot
 from .configuration import ConfigurationRoot
-from .stream import StreamRoot
+from .instanceconfig import TorInstanceConfig
 from .lookup import DNSRoot
+from .router import RouterRoot
+from .stream import StreamRoot
 
 __all__ = ('TorInstances', 'TorInstance')
 

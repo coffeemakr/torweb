@@ -4,9 +4,9 @@ JSON circuit wrappers
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-from .router import JsonRouterMinimal
 from .base import JsonObjectWrapper
 from .minimalstream import JsonStreamMinimal
+from .router import JsonRouterMinimal
 
 __all__ = ('JsonCircuitMinimal', 'JsonCircuit')
 

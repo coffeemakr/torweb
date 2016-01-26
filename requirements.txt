@@ -1,3 +1,4 @@
 twisted
 autobahn[twisted]
 git+https://github.com/meejah/txtorcon.git
+zope.interface

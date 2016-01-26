@@ -1,16 +1,15 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
 from __future__ import absolute_import, print_function, with_statement
 
 import json
 
 import txtorcon
+from autobahn.twisted.websocket import (WebSocketServerFactory,
+                                        WebSocketServerProtocol)
 from zope.interface import implements
-from autobahn.twisted.websocket import WebSocketServerProtocol
-from autobahn.twisted.websocket import WebSocketServerFactory
 
 from torweb.api.json.circuit import JsonCircuit
 from torweb.api.json.stream import JsonStream
-
 
 __all__ = ('TorWebSocketServerFactory',)
 

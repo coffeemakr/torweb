@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# coding=utf-8
 
 from .encoder import get_encoder
 from .response import UnsuportedMediaTypeError

@@ -1,13 +1,20 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+from __future__ import absolute_import, with_statement
+
 import json
 import os
 
-from twisted import web
+from twisted.web import resource, static, util
+
 from torweb.api.ressources import TorInstances
+from torweb.error import ConfigurationError
 
 __all__ = ('TorwebResource', 'ApiResource')
 
 
-class TorwebResource(web.resource.Resource):
+class TorwebResource(resource.Resource):
     '''
     The root resource for all resources provided by the webserver.
     These are the following:
@@ -17,18 +24,32 @@ class TorwebResource(web.resource.Resource):
     '''
 
     def __init__(self, basedir):
-        web.resource.Resource.__init__(self)
+        resource.Resource.__init__(self)
+        self.basedir = basedir
 
-        with open(os.path.join(basedir, 'torweb.json'), 'r') as config:
-            connections = json.load(config)
+        config = self._read_config('torweb.json')
 
-        self.putChild('', web.util.Redirect('/app'))
-        self.putChild('app', web.static.File(
-            os.path.abspath(os.path.join(basedir, 'app'))))
-        self.putChild('api', ApiResource(connections))
+        self.putChild('', util.Redirect('/app'))
+        self.putChild('app', static.File(self.basedir))
+        self.putChild('api', ApiResource(config))
+
+    def _read_config(self, filename):
+        '''
+        Read the configuration file.
+        :param filename: The filename relative to the basedir or
+                         an absolute path.
+        '''
+        if not os.path.isabs(filename):
+            filename = os.path.join(self.basedir, filename)
+        with open(filename, 'rb') as configfile:
+            try:
+                config = json.load(configfile)
+            except json.error as why:
+                raise ConfigurationError("Invalid JSON: " + str(why))
+        return config
 
 
-class ApiResource(web.resource.Resource):
+class ApiResource(resource.Resource):
     '''
     RESTful API definition. Currently contains
     only one child:
@@ -37,5 +58,5 @@ class ApiResource(web.resource.Resource):
     '''
 
     def __init__(self, config):
-        web.resource.Resource.__init__(self)
+        resource.Resource.__init__(self)
         self.putChild('tor', TorInstances(config))

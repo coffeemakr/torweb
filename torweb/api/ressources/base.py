@@ -10,9 +10,11 @@ from torweb.api.util import response
 from torweb.api.json.base import IJSONSerializable
 import zope.interface
 
+
 __all__ = ('ITorResource', 'TorResource', 'TorResourceDetail')
 
 
+# FIXME: Use resource interface
 class ITorResource(zope.interface.Interface):
     '''
     Tor resource
