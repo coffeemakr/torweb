@@ -9,7 +9,6 @@ import zope.interface
 
 from twisted.web import resource
 
-from torweb.api.json.base import IJSONSerializable
 from torweb.api.util import response
 
 from .instanceconfig import TorInstanceConfig

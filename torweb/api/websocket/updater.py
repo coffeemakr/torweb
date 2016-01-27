@@ -3,12 +3,13 @@ from __future__ import absolute_import, print_function, with_statement
 
 import json
 
-import txtorcon
 from autobahn.twisted.websocket import (WebSocketServerFactory,
                                         WebSocketServerProtocol)
 from zope.interface import implements
 
+import txtorcon
 from torweb.api.json.circuit import JsonCircuit
+from torweb.api.json.encoder import ExtendedJSONEncoder
 from torweb.api.json.stream import JsonStream
 
 __all__ = ('TorWebSocketServerFactory',)
@@ -60,16 +61,15 @@ class MyServerProtocol(WebSocketServerProtocol):
             'type': event,
             'data': data
         }
-        self.sendMessage(json.dumps(payload).encode('utf8'))
+        self.sendMessage(json.dumps(payload,
+                                    cls=ExtendedJSONEncoder).encode('utf8'))
 
     def send_circuit_event(self, action, circuit):
         '''
         Sends a circuit event to the connected client.
         '''
-        json_circuit = JsonCircuit(circuit).as_dict()
-
         event = {'action': action,
-                 'circuit': json_circuit}
+                 'circuit': JsonCircuit(circuit)}
 
         self.send_event(EVENT_TYPE_CIRCUIT, event)
 
@@ -104,7 +104,6 @@ class MyServerProtocol(WebSocketServerProtocol):
         '''
         Circuit listener method
         '''
-        _ = router
         self.send_circuit_event(EVENT_CIRCUIT_EXTEND, circuit)
 
     def circuit_built(self, circuit):
@@ -117,14 +116,12 @@ class MyServerProtocol(WebSocketServerProtocol):
         '''
         Circuit listener method
         '''
-        _ = kwargs
         self.send_circuit_event(EVENT_CIRCUIT_CLOSED, circuit)
 
     def circuit_failed(self, circuit, **kwargs):
         '''
         Circuit listener method
         '''
-        _ = kwargs
         self.send_circuit_event(EVENT_CIRCUIT_FAILED, circuit)
 
     def stream_new(self, stream):
@@ -143,28 +140,24 @@ class MyServerProtocol(WebSocketServerProtocol):
         '''
         Stream listener method
         '''
-        _ = circuit
         self.send_stream_event(EVENT_STREAM_ATTACH, stream)
 
     def stream_detach(self, stream, **kwargs):
         '''
         Stream listener method
         '''
-        _ = kwargs
         self.send_stream_event(EVENT_STREAM_DETACH, stream)
 
     def stream_closed(self, stream, **kwargs):
         '''
         Stream listener method
         '''
-        _ = kwargs
         self.send_stream_event(EVENT_STREAM_CLOSED, stream)
 
     def stream_failed(self, stream, **kwargs):
         '''
         Stream listener method
         '''
-        _ = kwargs
         self.send_stream_event(EVENT_STREAM_FAILED, stream)
 
 

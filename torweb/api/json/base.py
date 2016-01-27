@@ -4,7 +4,6 @@ Base classes to encode classes.
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-import txtorcon
 import zope.interface
 
 __all__ = ('JsonObjectWrapper', 'IJSONSerializable')

@@ -4,7 +4,6 @@ JSON stream wrapper.
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-from .circuit import JsonCircuitMinimal
 from .minimalstream import JsonStreamMinimal
 
 __all__ = ('JsonStream', 'JsonStreamMinimal')
@@ -40,8 +39,6 @@ class JsonStream(JsonStreamMinimal):
 
     def as_dict(self):
         result = super(JsonStream, self).as_dict()
-        if result['circuit'] is not None:
-            result['circuit'] = JsonCircuitMinimal(result['circuit']).as_dict()
         if result['state'] in self.state_text:
             result['state_text'] = self.state_text[result['state']]
         else:

@@ -1,16 +1,19 @@
 import datetime
 import json
 
-from txtorcon.util import ipaddr as ipaddress
 import txtorcon.util
+from torweb.api.json import (base, circuit, minimalstream,
+                             router)
+from txtorcon.util import ipaddr as ipaddress
 
-from .base import IJSONSerializable
+from txtorcon import Router, Circuit, Stream
 
 IPADDRESSES = (ipaddress.IPv4Address,
                ipaddress.IPv6Address,
                ipaddress.IPAddress)
 
-__all__ = ['JSONEncoder']
+
+__all__ = ['ExtendedJSONEncoder']
 
 
 class ExtendedJSONEncoder(json.JSONEncoder):
@@ -26,8 +29,14 @@ class ExtendedJSONEncoder(json.JSONEncoder):
         '''
         Implementation of encoding
         '''
-        if IJSONSerializable.providedBy(o):
-            return IJSONSerializable(o).as_dict()
+        if base.IJSONSerializable.providedBy(o):
+            return base.IJSONSerializable(o).as_dict()
+        elif isinstance(o, Router):
+            return router.JsonRouterMinimal(o).as_dict()
+        elif isinstance(o, Circuit):
+            return circuit.JsonCircuitMinimal(o).as_dict()
+        elif isinstance(o, Stream):
+            return minimalstream.JsonStreamMinimal(o).as_dict()
         elif isinstance(o, datetime.datetime):
             return o.isoformat()
         elif isinstance(o, txtorcon.util.NetLocation):

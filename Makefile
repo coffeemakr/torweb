@@ -143,7 +143,7 @@ clean_npm:
 
 
 .PHONY: test
-test: pep8 trial_test
+test: pep8 flake8 trial_test
 
 .PHONY: trial_test
 trial_test:
@@ -192,6 +192,10 @@ $(BDIST_WHEEL): $(SETUP_PY) $(PYTHON_DEV_PACKAGES)
 .PHONY: pep8
 pep8: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
 	@ pep8 $^
+
+.PHONY: flake8
+flake8: $(PYTHON_DEV_PACKAGES)
+	@ flake8 $(PYPACKAGE)
 
 .PHONY: pylint
 pylint: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
