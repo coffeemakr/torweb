@@ -15,7 +15,7 @@ class TestConfiguration(unittest.TestCase):
             'number': configuration.IntegerEntry(),
             'text': configuration.StringEntry(),
             'dict': configuration.DictEntry({
-                'number': configuration.IntegerEntry(),
+                'numbers': configuration.ListEntry(configuration.IntegerEntry()),
                 'text': configuration.StringEntry()
             })
         })
@@ -26,7 +26,7 @@ class TestConfiguration(unittest.TestCase):
             'number': None,
             'text': None,
             'dict': {
-                'number': None,
+                'numbers': [],
                 'text': None
             }
         }
@@ -37,7 +37,7 @@ class TestConfiguration(unittest.TestCase):
             'number': 1,
             'text': 'hi threre',
             'dict': {
-                'number': 2,
+                'numbers': [2,3,4,5,6,7],
                 'text': 'some other \n text'
             }
         }
@@ -55,7 +55,23 @@ class TestConfiguration(unittest.TestCase):
             'number': 'hi',
             'text': 'hi threre',
             'dict': {
-                'number': 2,
+                'numbers': [2],
+                'text': 'some other \n text'
+            }
+        }
+        temp = tempfile.NamedTemporaryFile()
+        json.dump(data, temp)
+        temp.flush()
+
+        self.assertRaises(ValueError, self.config.read_file, temp.name)
+        temp.close()
+
+    def test_read_invalid_entry_name_from_file(self):
+        data = {
+            'number': 'hi',
+            'text': 'hi threre',
+            'dict': {
+                'number': [2],
                 'text': 'some other \n text'
             }
         }

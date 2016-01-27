@@ -5,12 +5,20 @@ import json
 
 import zope.interface
 
+from torweb.api.json.encoder import ExtendedJSONEncoder
+
 __all__ = ('IContentEncoder', 'JSONEncoder', 'ENCODER_BY_TYPE')
 
 
 class IContentEncoder(zope.interface.Interface):
     types = zope.interface.Attribute("List of mime types supported "
                                      "by this encoder")
+
+    sub_type = zope.interface.Attribute("Sub type")
+
+    top_type = zope.interface.Attribute("Top type")
+
+    full_type = zope.interface.Attribute("Full type")
 
     def loads(self, content):
         '''
@@ -53,7 +61,7 @@ class JSONEncoder(BaseEncoder):
         return json.loads(content)
 
     def dumps(self, content):
-        return json.dumps(content).encode('utf-8')
+        return json.dumps(content, cls=ExtendedJSONEncoder).encode('utf-8')
 
 
 _HTML_WRAPPER = '''

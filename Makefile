@@ -1,7 +1,7 @@
 
 PYPACKAGE=torweb
 PY_SOURCES=$(shell find $(PYPACKAGE)/ -type f -name '*.py')
-STATIC_DIR=app
+STATIC_DIR=torweb/data/app
 
 VERSION=$(shell python setup.py --version)
 
@@ -20,6 +20,10 @@ ifeq ($(GPG),)
 endif
 
 VENV_DIR:=venv
+
+BOWERRC=.bowerrc
+
+BOWER_PATH=$(shell cat ${BOWERRC} | python -c "import json, sys; d = json.load(sys.stdin); sys.stdout.write(d['directory'])")
 
 # NPM packages binary folder
 NODE_BIN := node_modules/.bin/
@@ -145,6 +149,10 @@ test: pep8 trial_test
 trial_test:
 	trial --reporter=text test
 
+.PHONY: check_bowerpath
+check_bowerpath:
+	@echo ${BOWER_PATH}
+
 .PHONY: githook
 githook: $(GIT_PRECOMMIT_HOOK)
 $(GIT_PRECOMMIT_HOOK):
@@ -187,9 +195,9 @@ pep8: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
 
 .PHONY: pylint
 pylint: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
-	$(PYLINT) $(PYPACKAGE)
+	@ $(PYLINT) $(PYPACKAGE)
 	
 .PHONY: pyflakes
 pyflakes: $(PY_SOURCES) $(PYTHON_DEV_PACKAGES)
-	pyflakes $(PYPACKAGE)
+	@ pyflakes $(PYPACKAGE)
 

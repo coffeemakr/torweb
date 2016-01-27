@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, with_statement
 
-import zope.interface
+from zope.interface import implements
 
 from torweb.api.json.router import JsonRouter
 
@@ -14,7 +14,7 @@ class RouterRoot(TorResource):
     '''
     Router list resource.
     '''
-    zope.interface.implements(ITorResource)
+    implements(ITorResource)
 
     json_detail_class = JsonRouter
     json_list_class = JsonRouter

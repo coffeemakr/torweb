@@ -75,9 +75,14 @@ class DictEntry(ConfigEntry):
     '''
     instanceof = dict
 
-    def __init__(self, entries):
+    entries = None
+
+    def __init__(self, entries=None):
         super(DictEntry, self).__init__(default_value=[])
-        self.entries = entries
+        if entries is not None:
+            self.entries = entries
+        if self.entries is None:
+            raise RuntimeError("entries have to be set")
 
     def load(self, value):
         value = super(DictEntry, self).load(value)

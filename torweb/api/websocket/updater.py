@@ -104,6 +104,7 @@ class MyServerProtocol(WebSocketServerProtocol):
         '''
         Circuit listener method
         '''
+        _ = router
         self.send_circuit_event(EVENT_CIRCUIT_EXTEND, circuit)
 
     def circuit_built(self, circuit):
@@ -116,12 +117,14 @@ class MyServerProtocol(WebSocketServerProtocol):
         '''
         Circuit listener method
         '''
+        _ = kwargs
         self.send_circuit_event(EVENT_CIRCUIT_CLOSED, circuit)
 
-    def circuit_failed(self, circuit, **kw):
+    def circuit_failed(self, circuit, **kwargs):
         '''
         Circuit listener method
         '''
+        _ = kwargs
         self.send_circuit_event(EVENT_CIRCUIT_FAILED, circuit)
 
     def stream_new(self, stream):
@@ -140,24 +143,28 @@ class MyServerProtocol(WebSocketServerProtocol):
         '''
         Stream listener method
         '''
+        _ = circuit
         self.send_stream_event(EVENT_STREAM_ATTACH, stream)
 
-    def stream_detach(self, stream, **kw):
+    def stream_detach(self, stream, **kwargs):
         '''
         Stream listener method
         '''
+        _ = kwargs
         self.send_stream_event(EVENT_STREAM_DETACH, stream)
 
-    def stream_closed(self, stream, **kw):
+    def stream_closed(self, stream, **kwargs):
         '''
         Stream listener method
         '''
+        _ = kwargs
         self.send_stream_event(EVENT_STREAM_CLOSED, stream)
 
-    def stream_failed(self, stream, **kw):
+    def stream_failed(self, stream, **kwargs):
         '''
         Stream listener method
         '''
+        _ = kwargs
         self.send_stream_event(EVENT_STREAM_FAILED, stream)
 
 

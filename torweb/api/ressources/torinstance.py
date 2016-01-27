@@ -85,8 +85,8 @@ class TorInstance(resource.Resource):
         if path == 'dns':
             port = self.dns_port
             if port is None:
-                msg = "Tor instance has not DNSPort."
-                return response.encodeError(message=msg, name="No DNS")
+                return response.error("No DNS",
+                                      "Tor instance has not DNSPort.")
             else:
                 self.dns.config.resolver = client.Resolver(
                     servers=[(self.host, port)])
@@ -273,7 +273,7 @@ class TorInstance(resource.Resource):
         '''
         Renders this instance as JSON.
         '''
-        return JsonTorInstance(self).as_dict()
+        return JsonTorInstance(self)
 
 
 class TorInstances(resource.Resource):
@@ -284,11 +284,11 @@ class TorInstances(resource.Resource):
     #: Dictionary containing the tor instances by their IDs.
     instances = None
 
-    def __init__(self, config):
+    def __init__(self, connections):
         resource.Resource.__init__(self)
-        self.config = config
+        self.connections = connections
         self.instances = {}
-        for index, config in enumerate(self.config["connections"]):
+        for index, config in enumerate(self.connections):
             instance = self._get_instance_from_config(config)
             instance.id = str(index)
             self.instances[instance.id] = instance
@@ -332,7 +332,7 @@ class TorInstances(resource.Resource):
         '''
         result = []
         for instance in self.instances.values():
-            result.append(JsonTorInstanceMinimal(instance).as_dict())
+            result.append(JsonTorInstanceMinimal(instance))
         return {'objects': result}
 
     @response.encode

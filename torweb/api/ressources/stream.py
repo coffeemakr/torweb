@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, with_statement
 
-import zope.interface
+from zope.interface import implements
 
 from torweb.api.json.stream import JsonStream
 from torweb.api.util import response
@@ -30,7 +30,7 @@ class StreamRoot(TorResource):
     to return :class:`Stream` objects for details and modifications.
     '''
 
-    zope.interface.implements(ITorResource)
+    implements(ITorResource)
 
     #: The json wrapper for lists.
     json_list_class = JsonStream

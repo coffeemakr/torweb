@@ -4,7 +4,7 @@
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-import zope.interface
+from zope.interface import implements
 from twisted.web import server
 
 from torweb.api.json.circuit import JsonCircuit
@@ -18,8 +18,8 @@ __all__ = ('CircuitRoot', 'Circuit')
 class Circuit(TorResourceDetail):
     '''
     Resource to render details of a tor circuit.
-      * `GET`: Get details (see :meth:`TorResourceDetail.render_GET`)
-      * `DELETE`:  Close the circuit (see :meth:`render_DELETE`)
+      * GET: Get details (see :meth:`TorResourceDetail.render_GET`)
+      * DELETE:  Close the circuit (see :meth:`render_DELETE`)
     '''
 
     @response.encode
@@ -49,7 +49,7 @@ class CircuitRoot(TorResource):
       * `GET`: List of circuits
     '''
 
-    zope.interface.implements(ITorResource)
+    implements(ITorResource)
 
     json_list_class = JsonCircuit
     json_detail_class = JsonCircuit

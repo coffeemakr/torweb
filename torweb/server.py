@@ -28,44 +28,54 @@ from twisted.web import server
 from torweb import configuration as config
 from torweb import data
 
-from .torweb import TorwebResource
+from torweb.api.ressources.api import TorwebResource
+
+
+class ServerEntry(config.DictEntry):
+    entries = {
+        'ssl': config.BooleanEntry(default_value=False),
+        'port': config.IntegerEntry(default_value=8082),
+        'address': config.StringEntry(default_value='127.0.0.1')
+    }
+
+
+class ConnectionEntry(config.DictEntry):
+    entries = {
+        'name': config.StringEntry(),
+        'host': config.StringEntry(),
+        'port': config.IntegerEntry(),
+        'password': config.StringEntry()
+    }
 
 
 class TorwebConfiguration(config.Configuration):
 
     _name_connections = 'connections'
     _name_includes = 'include configuration'
+    _name_server = 'server'
 
     root_entry = config.DictEntry({
-        _name_connections: config.ListEntry(config.DictEntry({
-            'name': config.StringEntry(),
-            'host': config.StringEntry(),
-            'port': config.IntegerEntry(),
-            'password': config.StringEntry()
-        })),
-        _name_includes: config.ListEntry(config.StringEntry())
+        _name_server: ServerEntry(),
+        _name_connections: config.ListEntry(ConnectionEntry()),
+        # _name_includes: config.ListEntry(config.StringEntry())
     })
 
     @property
-    def include_configuration_files(self):
-        return self.value[self._name_includes]
+    def connections(self):
+        '''
+        Returns a list of dictionaries.
+        '''
+        return self.value[self._name_connections]
+
+    @property
+    def server(self):
+        return self.value[self._name_server]
 
 
 def get_configuration(filename=None):
     if filename is None:
         filename = data.default_configuration()
-    config = TorwebConfiguration(configfile=filename)
-
-    # TODO: implement configuration file includes
-
-    '''
-    files = config.include_configuration_files
-
-    for filename in files:
-        if os.path.isfile(filename):
-            config.read_file(filename)
-    '''
-    return config
+    return TorwebConfiguration(configfile=filename)
 
 
 def main():
@@ -105,7 +115,9 @@ def main():
     if args.certificate is None:
         args.certificate = os.path.join(root_folder, 'cert.pem')
 
-    torweb_resource = TorwebResource()
+    config = get_configuration()
+
+    torweb_resource = TorwebResource(data.get_app_dir(), config.connections)
     site = server.Site(torweb_resource)
 
     if args.tls:

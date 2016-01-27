@@ -4,21 +4,24 @@ This module provides classes for resources which depend on a tor instance.
 '''
 from __future__ import absolute_import, print_function, with_statement
 
-from twisted.web import resource
-from .instanceconfig import TorInstanceConfig
-from torweb.api.util import response
-from torweb.api.json.base import IJSONSerializable
+
 import zope.interface
 
+from twisted.web import resource
+
+from torweb.api.json.base import IJSONSerializable
+from torweb.api.util import response
+
+from .instanceconfig import TorInstanceConfig
 
 __all__ = ('ITorResource', 'TorResource', 'TorResourceDetail')
 
 
-# FIXME: Use resource interface
-class ITorResource(zope.interface.Interface):
+class ITorResource(resource.IResource):
     '''
     Tor resource
     '''
+
     json_list_class = zope.interface.Attribute(
         "Class to serialize an object for lists.")
 
@@ -48,8 +51,6 @@ class TorResource(resource.Resource):
     Base class for resources bound to a tor instance.
     '''
 
-    zope.interface.implements(ITorResource)
-
     #: Class to serialize an object for lists.
     json_list_class = None
 
@@ -69,32 +70,13 @@ class TorResource(resource.Resource):
         elif not isinstance(config, TorInstanceConfig):
             raise TypeError("Expected TorInstanceConfig")
         self._config = config
-        self._check_class_attributes()
 
-    def get_list(self):
-        '''
-        Should return a list of objects
-        '''
-        raise NotImplementedError
+        self._json_list_class = self.json_list_class
+        self._json_detail_class = self.json_detail_class
 
-    def get_by_id(self, ident):
-        '''
-        Should return a single object.
-
-        :param ident: The identifier
-        '''
-        raise NotImplementedError
-
-    def _check_class_attributes(self):
-        '''
-        Checks if all class attributes are properly overwritten.
-        '''
-        if not IJSONSerializable.implementedBy(self.json_list_class):
-            raise RuntimeError('json_list_class not valid')
-        if not IJSONSerializable.implementedBy(self.json_detail_class):
-            raise RuntimeError('json_detail_class not overriden')
         if self.detail_class is None:
             self.detail_class = TorResourceDetail
+        self.detail_class = self.detail_class
 
     @response.encode
     def render_GET(self, request):
@@ -106,8 +88,8 @@ class TorResource(resource.Resource):
         result = {}
         items = []
         try:
-            for item in self.get_list():
-                items.append(self.json_list_class(item).as_dict())
+            for item in ITorResource(self).get_list():
+                items.append(self.json_list_class(item))
         except RuntimeError as why:
             result = response.error_exception(why)
         else:
@@ -128,7 +110,7 @@ class TorResource(resource.Resource):
             if not ident:
                 return response.NoResource("Empty identifier.")
             try:
-                item = self.get_by_id(ident)
+                item = ITorResource(self).get_by_id(ident)
             except ValueError:
                 return response.NoResource("Invalid identifier.")
             if item is None:
@@ -144,6 +126,7 @@ class TorResourceDetail(resource.Resource):
     Objects of this class are returned by :meth:`TorResource.getChil` by
     default.
     '''
+
     #: Is leaf because detail resources cannot have children.
     isLeaf = True
 

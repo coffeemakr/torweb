@@ -6,6 +6,10 @@ from .response import UnsuportedMediaTypeError
 
 
 def decode(func):
+    '''
+    Automatically decode the request and store it as
+    :attr:`request.json_content`.
+    '''
     def new_func(self, request, *args):
         encoder = None
         if request.requestHeaders.hasHeader('content-type'):

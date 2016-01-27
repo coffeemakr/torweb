@@ -16,7 +16,7 @@ from __future__ import absolute_import, print_function, with_statement
 import json
 
 import txtorcon
-import zope.interface
+from zope.interface import implements
 from twisted.web import server
 
 from torweb.api.json import configuration
@@ -133,7 +133,7 @@ class ConfigurationRoot(TorResource):
     Resource representing the whole tor process configuration.
     '''
 
-    zope.interface.implements(ITorResource)
+    implements(ITorResource)
 
     detail_class = Configuration
 

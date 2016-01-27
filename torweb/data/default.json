@@ -1,6 +1,0 @@
-{
-	"connections": [
-		{"name":"Daemon", "host": "127.0.0.1", "port": 9051, "password": "secret"},
-		{"name":"Tor Browser", "host": "127.0.0.1", "port": 9151, "password": "secret"}
-	]
-}

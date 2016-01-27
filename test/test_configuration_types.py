@@ -151,6 +151,30 @@ class TestConfigurationTypeList(unittest.TestCase):
         self.assertRaises(ValueError, entry.load, [1,2,3,4,'hi'])
         self.assertRaises(ValueError, entry.load, [1,2,3,'hi',1,2,3])
 
+    def test_invalid_values(self):
+        entry = configuration.ListEntry(configuration.IntegerEntry())
+        self.assertRaises(ValueError, entry.load, None)
+        self.assertRaises(ValueError, entry.load, 0)
+        self.assertRaises(ValueError, entry.load, 1)
+        self.assertRaises(ValueError, entry.load, 0.5)
+        self.assertRaises(ValueError, entry.load, -0.5)
+        self.assertRaises(ValueError, entry.load, 'NaN')
+        self.assertRaises(ValueError, entry.load, 'Some text')
+        self.assertRaises(ValueError, entry.load, u'some ünicôde text')
+        self.assertRaises(ValueError, entry.load, '1')
+        self.assertRaises(ValueError, entry.load, '0')
+        self.assertRaises(ValueError, entry.load, u'1')
+        self.assertRaises(ValueError, entry.load, u'0')
+        self.assertRaises(ValueError, entry.load, (1,2,3,4))
+
+    def test_some_values(self):
+        entry = configuration.ListEntry(configuration.IntegerEntry())
+        self.assertEqual(entry.load([1,2,3,4,5,6]), [1,2,3,4,5,6])
+        self.assertEqual(entry.load([1]), [1])
+        entry = configuration.ListEntry(configuration.StringEntry())
+        self.assertEqual(entry.load(['0','2','3','4','5','6']),
+                         ['0','2','3','4','5','6'])
+        self.assertEqual(entry.load(['']), [''])
 
     def test_default_value(self):
         entry = configuration.ListEntry(configuration.IntegerEntry())

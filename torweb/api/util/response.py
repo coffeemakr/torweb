@@ -9,7 +9,15 @@ from .encoder import JSONEncoder, get_encoder
 
 
 def encode(func):
+    '''
+    Encode the webresponse according to the ACCEPT header.
+
+    :see get_encoder:
+    '''
     def new_func(*args, **kwargs):
+        '''
+        Encoding function wrapper
+        '''
         request = args[-1]
         encoder = None
         if request.requestHeaders.hasHeader('accept'):
@@ -18,7 +26,6 @@ def encode(func):
         if encoder is None:
             error = NotAcceptable()
             return error.render(request)
-            args = args[1:]
         else:
             result = func(*args, **kwargs)
             if result != server.NOT_DONE_YET:
@@ -100,21 +107,40 @@ JsonError = Error
 
 
 class NoResource(Error):
+    '''
+    No resource error.
+    Renders as a HTTP 404 error.
+    '''
+    #: Error name
     name = "No Such Resource"
+    #: Error message
     message = "Sorry. No luck finding that resource."
+    #: Error code
     code = 404
 
 
 class UnsuportedMediaTypeError(Error):
-    message = "Media Type not supported"
+    '''
+    Renders an Unsuported Media Type error.
+    '''
+    #: Error name
     name = "Unsuported Media Type"
+    #: Error message
+    message = "Media Type not supported"
+    #: Error code
     code = 415
 
 
 class NotAcceptable(Error):
-
+    '''
+    The accepting encoding is not supported.
+    Since the encoding is not supported it's rendered as JSON.
+    '''
+    #: Error name
     name = "Not Acceptable"
+    #: Error message
     message = "Cannot generate accepted output"
+    #: Error code
     code = 406
 
     def render(self, request):
