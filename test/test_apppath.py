@@ -16,3 +16,7 @@ class TestAppPath(unittest.TestCase):
     def test_app_path(self):
         path = os.path.join(self.data_path, 'app')
         self.assertEqual(path, data.get_app_dir())
+
+    def test_default_config(self):
+        path = os.path.join(self.data_path, 'config', 'default.json')
+        self.assertEqual(path, data.default_configuration())

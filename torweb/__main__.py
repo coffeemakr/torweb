@@ -7,4 +7,10 @@ from __future__ import absolute_import
 
 import torweb.server
 
-torweb.server.main()
+
+def main():
+    torweb.server.main()
+
+
+if __name__ == '__main__':
+    main()
