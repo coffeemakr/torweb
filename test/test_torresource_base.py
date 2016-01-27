@@ -23,13 +23,12 @@ class JsonClass(object):
         'Returns a dict'
         return {'object': self.object}
 
-    def json(self):
-        'Returns JSON'
-        return json.dumps(self.as_dict()).encode('utf-8')
-
 
 class TorResourceWithJson(base.TorResource):
     "Test resource"
+
+    zope.interface.implements(base.ITorResource)
+
     json_list_class = JsonClass
     json_detail_class = JsonClass
 
@@ -49,86 +48,6 @@ class TestTorResourceBase(unittest.TestCase):
         self.request = DummyRequest([''])
         self.request.requestHeaders.addRawHeader(
             'accept', 'application/json;charset=utf-8')
-
-    def test_json_list_class_not_set(self):
-        '''
-        Test if an error is raised of :attr:`json_list_class`
-        is not overriden by the subclass.
-        '''
-
-        class TorResourceWithoutListClass(TorResourceWithJson):
-            "Test Resource without json_list_class"
-            json_list_class = None
-            json_detail_class = JsonClass
-
-        try:
-            TorResourceWithoutListClass()
-            self.fail("No exception thrown for TorResourceWithoutListClass")
-        except RuntimeError as why:
-            msg = "json_list_class not in error message: " + str(why)
-            self.assertTrue('json_list_class' in str(why), msg=msg)
-
-    def test_json_detail_class_not_set(self):
-        '''
-        Test if an error is raised of :attr:`json_detail_class`
-        is not overriden by the subclass.
-        '''
-
-        class TorResourceWithoutDetailClass(TorResourceWithJson):
-            "Test Resource without json_detail_class"
-            json_list_class = JsonClass
-            json_detail_class = None
-
-        try:
-            TorResourceWithoutDetailClass()
-            self.fail("No exception thrown for TorResourceWithoutDetailClass")
-        except RuntimeError as why:
-            msg = "json_detail_class not in error message: " + str(why)
-            self.assertTrue('json_detail_class' in str(why), msg=msg)
-
-
-    def test_get_list_notimplemented(self):
-        '''
-        Test if a TorResource subclass which doesn't implement
-        get_list is detected and a exception is raised.
-        '''
-
-        class TorResourceWithoutGetList(base.TorResource):
-            "Subclass without get_list"
-            json_list_class = JsonClass
-            json_detail_class = JsonClass
-
-            def get_by_id(self, ident):
-                return None
-
-        resource = TorResourceWithoutGetList()
-        try:
-            resource.get_list()
-            self.fail("Nothing thrown")
-        except NotImplementedError:
-            pass
-
-    def test_get_by_id_notimplemented(self):
-        '''
-        Test if a TorResource subclass which doesn't implement
-        get_by_id is detected and a exception is raised.
-        '''
-
-        class TorResourceWithoutGetById(base.TorResource):
-            "Subclass without get_list"
-            json_list_class = JsonClass
-            json_detail_class = JsonClass
-
-            def get_list(self):
-                return []
-
-        resource = TorResourceWithoutGetById()
-
-        try:
-            resource.get_by_id(0)
-            self.fail("Nothing thrown")
-        except NotImplementedError:
-            pass
 
     def test_default_detail_class(self):
         class TorResourceWithJson1(TorResourceWithJson):
